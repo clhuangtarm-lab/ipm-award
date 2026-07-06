@@ -14,15 +14,12 @@
   *{box-sizing:border-box;}
   body{
     font-family:"Microsoft JhengHei","PingFang TC","Noto Sans TC",sans-serif;
-    font-size:20px; line-height:1.7; color:#222; margin:0;
-    background:#f7f7f2;
+    font-size:20px; line-height:1.7; color:#222; margin:0; background:#f7f7f2;
   }
-  header{
-    background:var(--green); color:#fff; padding:16px 20px; text-align:center;
-  }
+  header{ background:var(--green); color:#fff; padding:16px 20px; text-align:center; }
   header h1{margin:0; font-size:26px;}
   header p{margin:6px 0 0; font-size:16px; opacity:.95;}
-  main{max-width:760px; margin:0 auto; padding:20px 16px 80px;}
+  main{max-width:820px; margin:0 auto; padding:20px 16px 80px;}
   .screen{display:none;}
   .screen.active{display:block;}
   .card{
@@ -52,66 +49,65 @@
   .qnum{color:var(--gray); font-size:16px; margin-bottom:4px;}
   .question{font-size:24px; font-weight:bold; margin:6px 0 14px;}
   .hint{color:var(--gray); font-size:17px;}
-  .warn{
-    background:var(--orange-light); border-left:6px solid var(--orange);
-    padding:12px 14px; border-radius:8px; margin:12px 0; font-size:18px;
-  }
-  .info{
-    background:var(--blue-light); border-left:6px solid var(--blue);
-    padding:12px 14px; border-radius:8px; margin:12px 0; font-size:18px;
-  }
-  .result-title{
-    font-size:28px; color:var(--green-dark); font-weight:bold;
-    text-align:center; margin:8px 0;
-  }
+  .warn{ background:var(--orange-light); border-left:6px solid var(--orange);
+    padding:12px 14px; border-radius:8px; margin:12px 0; font-size:18px; }
+  .info{ background:var(--blue-light); border-left:6px solid var(--blue);
+    padding:12px 14px; border-radius:8px; margin:12px 0; font-size:18px; }
+  .result-title{ font-size:28px; color:var(--green-dark); font-weight:bold; text-align:center; margin:8px 0; }
   table{width:100%; border-collapse:collapse; margin:10px 0; font-size:17px;}
-  th,td{border:1px solid var(--line); padding:8px 10px; text-align:left;}
+  th,td{border:1px solid var(--line); padding:8px 10px; text-align:left; vertical-align:top;}
   th{background:var(--green-light);}
   ul.checklist{list-style:none; padding:0;}
-  ul.checklist li{
-    margin:10px 0; padding:10px 12px; background:#fafafa;
+  ul.checklist li{ margin:10px 0; padding:10px 12px; background:#fafafa;
     border:1px solid var(--line); border-radius:10px;
-    display:flex; align-items:flex-start; gap:12px; font-size:18px;
-  }
+    display:flex; align-items:flex-start; gap:12px; font-size:18px; }
   ul.checklist input[type=checkbox]{width:26px; height:26px; margin-top:4px; flex:none;}
-  .step{margin:20px 0;}
-  .step h3{font-size:21px; margin:0 0 4px; color:var(--green-dark);}
-  .step .score{font-size:16px; color:var(--orange); font-weight:bold;}
-  textarea{
-    width:100%; min-height:120px; font-size:19px; font-family:inherit;
-    padding:12px; border:2px solid var(--line); border-radius:10px; line-height:1.7;
-  }
-  textarea:focus{border-color:var(--green); outline:none;}
-  .counter{text-align:right; font-size:15px; color:var(--gray);}
+  .progress{position:sticky; top:0; background:#f7f7f2; padding:8px 0; z-index:5;
+    font-size:16px; color:var(--gray);}
+  .bar{height:8px; background:#e0e0e0; border-radius:4px; overflow:hidden; margin-top:4px;}
+  .bar>span{display:block; height:100%; background:var(--green); width:0;}
+  .sec-title{font-size:22px; color:var(--green-dark); font-weight:bold; margin:22px 0 6px;
+    border-left:8px solid var(--green); padding-left:10px;}
+  .field{margin:16px 0;}
+  .field label.q{display:block; font-size:19px; font-weight:bold; margin-bottom:2px;}
+  .field .fhint{font-size:15px; color:var(--gray); margin-bottom:6px;}
+  .field input[type=text], .field textarea, .field select{
+    width:100%; font-size:19px; font-family:inherit; padding:11px;
+    border:2px solid var(--line); border-radius:10px; line-height:1.7;}
+  .field textarea{min-height:110px;}
+  .field input:focus, .field textarea:focus, .field select:focus{border-color:var(--green); outline:none;}
+  .opts label{display:inline-flex; align-items:center; gap:6px; font-size:18px;
+    margin:4px 14px 4px 0; padding:6px 10px; border:1px solid var(--line);
+    border-radius:8px; cursor:pointer;}
+  .opts input{width:22px; height:22px;}
+  .counter{text-align:right; font-size:14px; color:var(--gray);}
   .counter.over{color:#c62828; font-weight:bold;}
-  #draftOutput{
-    white-space:pre-wrap; background:#fff; border:1px dashed var(--green);
-    border-radius:10px; padding:18px; font-size:18px;
-  }
-  footer{
-    max-width:760px; margin:0 auto; padding:16px; font-size:14px;
-    color:var(--gray); text-align:center;
-  }
-  .deadline{
-    background:#c62828; color:#fff; text-align:center; padding:10px;
-    font-size:18px; font-weight:bold;
-  }
+  /* 產生的報名表 */
+  #formOutput{background:#fff; color:#000;}
+  .doc{font-size:16px; line-height:1.8;}
+  .doc h2{text-align:center; font-size:22px; margin:4px 0;}
+  .doc h3{font-size:18px; background:var(--green-light); padding:6px 10px; margin:16px 0 6px; border-radius:6px;}
+  .doc table{font-size:15px;}
+  .doc .val{white-space:pre-wrap;}
+  .doc .blank{color:#999;}
+  .doc .sign{margin-top:8px; padding:12px; border:1px dashed #888; border-radius:8px; background:#fcfcfc;}
+  .deadline{ background:#c62828; color:#fff; text-align:center; padding:10px; font-size:18px; font-weight:bold; }
+  footer{max-width:820px; margin:0 auto; padding:16px; font-size:14px; color:var(--gray); text-align:center;}
   @media print{
-    header, .deadline, .no-print, footer{display:none !important;}
-    body{background:#fff; font-size:14pt;}
-    .screen{display:none !important;}
-    #printArea{display:block !important;}
+    header, .deadline, .no-print, footer, .backlink, .progress{display:none !important;}
+    body{background:#fff; font-size:12pt;}
+    .card{border:none; box-shadow:none; padding:0; margin:0;}
+    .doc h3{-webkit-print-color-adjust:exact; print-color-adjust:exact;}
   }
-  #printArea{display:none;}
 </style>
 </head>
 <body>
 
 <header>
   <h1>永續善農獎 IPM Award 報名小幫手</h1>
-  <p>三分鐘找到適合的組別，一步一步準備報名資料</p>
+  <p>找到適合的組別，一步一步填出可投件的報名表</p>
 </header>
-<div class="deadline" id="deadlineBar">報名截止：民國115年10月15日</div>
+<div class="deadline" id="deadlineBar">報名截止：以主辦單位公告為準</div>
 
 <main>
 
@@ -120,19 +116,20 @@
   <div class="card">
     <p style="font-size:22px; margin-top:0;">您好！這裡可以幫您：</p>
     <button class="bigbtn" onclick="startQuiz()">① 我適合報名哪一組？（回答幾個問題）</button>
-    <button class="bigbtn" onclick="showScreen('scr-groupselect')">② 幫我準備報名資料</button>
+    <button class="bigbtn" onclick="showScreen('scr-groupselect')">② 幫我填報名表</button>
     <button class="bigbtn secondary" onclick="showScreen('scr-tips')">③ 投件注意事項與聯絡方式</button>
   </div>
   <div class="info">
     不會用電腦也沒關係：可以請家人、產銷班夥伴或農會人員陪您一起填。
     也可以直接加官方LINE「<b>@940rvuff</b>」或打電話 <b>(02) 2585-1775 分機32</b> 詢問。
+    填寫內容只會存在您自己的手機或電腦，<b>不會上傳</b>，可以放心填。
   </div>
   <div class="warn">
-    本工具依「第五屆永續善農獎評選辦法草案（委員確認版）」整理，<b>正式辦法暫訂於民國115年8月公告</b>。
-    公告前，組別、配分、必繳資料、截止日等內容可能調整，一切<b>以主辦單位正式公告為準</b>。
+    本工具依「第五屆永續善農獎評選辦法草案」及第四屆報名表整理，<b>第五屆正式報名表暫訂115年8月公告</b>。
+    公告前欄位與規定可能調整，正式投件請以主辦單位公告的官方表格為準。
   </div>
   <a class="bigbtn secondary" href="https://ipm-award.mystrikingly.com/" target="_blank" rel="noopener"
-     style="text-decoration:none; display:flex; align-items:center; justify-content:center;">前往活動網站看最新公告與報名方式</a>
+     style="text-decoration:none; display:flex; align-items:center; justify-content:center;">前往活動網站看最新公告</a>
 </section>
 
 <!-- ===== 測驗 ===== -->
@@ -153,53 +150,44 @@
     <div class="result-title" id="resultGroup"></div>
     <p id="resultDesc" style="font-size:18px;"></p>
     <div id="resultWarnings"></div>
-    <div class="warn" style="font-size:16px;">以上為初步建議。<b>最終參賽資格與分組，由主辦單位及評審委員認定</b>。評分與資料要求依評選辦法草案整理，正式規定以公告為準。</div>
-    <h3>這一組的評分重點</h3>
-    <div id="resultScoring"></div>
-    <h3>必須繳交的資料</h3>
-    <ul id="resultDocs" style="font-size:18px;"></ul>
-    <button class="bigbtn" onclick="goPrep(currentGroup)">下一步：開始準備報名資料</button>
+    <div class="warn" style="font-size:16px;">以上為初步建議。<b>最終參賽資格與分組，由主辦單位及評審委員認定</b>。</div>
+    <button class="bigbtn" onclick="goForm(currentGroup)">下一步：開始填報名表</button>
     <button class="bigbtn secondary" onclick="startQuiz()">重新做一次測驗</button>
     <button class="bigbtn secondary" onclick="showScreen('scr-home')">回首頁</button>
   </div>
 </section>
 
-<!-- ===== 選組（直接進資料準備） ===== -->
+<!-- ===== 選組 ===== -->
 <section class="screen" id="scr-groupselect">
   <button class="backlink" onclick="showScreen('scr-home')">← 回首頁</button>
   <div class="card">
     <p class="question">請選擇您要報名的組別</p>
-    <button class="optbtn" onclick="goPrep('field')">現場操作組：我自己種植、生產，用IPM方法管理病蟲害</button>
-    <button class="optbtn" onclick="goPrep('tech')">技術創新組：我研發新技術、新資材或新應用策略</button>
-    <button class="optbtn" onclick="goPrep('promo')">行銷推廣組：我做推廣、輔導、教育、行銷或採購IPM產品</button>
+    <button class="optbtn" onclick="goForm('field')">現場操作組：我自己種植、生產，用IPM方法管理病蟲害</button>
+    <button class="optbtn" onclick="goForm('tech')">技術創新組：我研發新技術、新資材或新方法，想推廣給別人用</button>
+    <button class="optbtn" onclick="goForm('promo')">行銷推廣組：我做推廣、輔導、教育、行銷或採購IPM產品</button>
     <p class="hint">不確定選哪組？<button class="backlink" onclick="startQuiz()">先做分組測驗</button></p>
   </div>
 </section>
 
-<!-- ===== 資料準備 ===== -->
-<section class="screen" id="scr-prep">
-  <button class="backlink no-print" onclick="showScreen('scr-groupselect')">← 換組別</button>
-  <div class="card">
-    <div class="result-title" id="prepTitle"></div>
-    <h3>第一步：清點必繳資料（打勾追蹤進度，會自動記住）</h3>
-    <ul class="checklist" id="prepChecklist"></ul>
-    <div class="info" id="prepRefDocs"></div>
-    <div class="warn" style="font-size:16px;">必繳項目與格式依評選辦法草案整理，正式辦法公告後可能調整。繳件前請對照主辦單位正式公告。</div>
+<!-- ===== 填報名表 ===== -->
+<section class="screen" id="scr-form">
+  <div class="progress no-print">
+    <button class="backlink" onclick="showScreen('scr-groupselect')">← 換組別</button>
+    <span id="progText"></span>
+    <div class="bar"><span id="progBar"></span></div>
   </div>
-  <div class="card">
-    <h3 style="margin-top:0;">第二步：回答問題，產生內容草稿</h3>
-    <p class="hint">用平常說話的方式寫就可以，寫多寫少都行，之後可以再修。
-    內容會自動儲存在這台裝置上，下次打開繼續寫。</p>
-    <div id="prepSteps"></div>
-    <button class="bigbtn" onclick="makeDraft()">產生草稿</button>
+  <div class="card no-print">
+    <div class="result-title" id="formTitle"></div>
+    <div class="info" style="font-size:16px;">用平常說話的方式填就好，不會的欄位可以先留白，之後再補。填好按最下面「產生報名表」，就會排好一份可以列印、投件的報名表。內容會自動存在這台裝置，下次打開繼續填。</div>
+    <div id="formFields"></div>
+    <button class="bigbtn" onclick="makeForm()">產生報名表</button>
   </div>
-  <div class="card" id="draftCard" style="display:none;">
-    <h3 style="margin-top:0;">您的內容草稿</h3>
-    <div class="warn">此草稿僅供整理思路。正式報名須填入官方附件表格
-    （中文12pt標楷體、英文Times New Roman、固定行高18），欄位以官方公告版本為準。</div>
-    <div id="draftOutput"></div>
-    <button class="bigbtn no-print" onclick="copyDraft()">複製草稿文字</button>
-    <button class="bigbtn secondary no-print" onclick="printDraft()">列印草稿（也可請家人幫忙印）</button>
+  <div class="card" id="formResultCard" style="display:none;">
+    <div class="warn no-print">下面是依您填寫內容排好的報名表。可以<b>列印</b>或存成 PDF 拿去投件；有簽名、蓋章、附件的地方請印出後補上。正式投件請對照主辦單位公告的官方表格。</div>
+    <div id="formOutput" class="doc"></div>
+    <button class="bigbtn no-print" onclick="printForm()">列印 / 存成 PDF</button>
+    <button class="bigbtn secondary no-print" onclick="copyForm()">複製全部文字</button>
+    <button class="bigbtn secondary no-print" onclick="showScreen('scr-form');window.scrollTo(0,0);">回上面繼續修改</button>
   </div>
 </section>
 
@@ -213,21 +201,21 @@
     <a href="https://ipm-award.mystrikingly.com/" target="_blank" rel="noopener"><b>https://ipm-award.mystrikingly.com/</b></a></p>
     <table>
       <tr><th style="width:30%;">線上報名</th>
-          <td>依草案：將申請文件電子檔寄到 <b>cytang.tarm@gmail.com</b>（正式報名表單以活動網站公告為準）<br>期限：民國115年10月15日 23:59 前完成檔案寄送（暫定）</td></tr>
+          <td>依草案：將申請文件電子檔寄到 <b>cytang.tarm@gmail.com</b>（正式報名表單以活動網站公告為準）</td></tr>
       <tr><th>紙本報名</th>
-          <td>掛號郵寄至：<b>104 臺北市中山北路三段28號3樓<br>台灣農業科技資源運籌管理學會 收（永續善農獎報名）</b><br>期限：民國115年10月15日郵戳為憑（暫定）</td></tr>
+          <td>掛號郵寄至：<b>104 臺北市中山北路三段28號3樓<br>台灣農業科技資源運籌管理學會 收（永續善農獎報名）</b></td></tr>
     </table>
   </div>
   <div class="card">
     <h2 style="margin-top:0;">重要提醒</h2>
     <ul style="font-size:18px;">
       <li>每屆每位參賽者<b>報名件數以1件為限</b>。</li>
-      <li>報名資料<b>以50頁為限（含佐證附件）</b>，A4格式，本文12級字以上；表格、圖說不小於10級字。不要用縮小字體、壓縮行距或大量文字轉圖片的方式塞頁數。</li>
-      <li>若內容有使用<b>AI生成文字</b>，或請植物醫學專家、其助理、植物診療師<b>協助撰寫</b>，請主動在報名資料標示（報名資料聲明，附件5-2）。</li>
+      <li>報名資料<b>以50頁為限（含佐證附件）</b>，A4、本文12級字以上；表格、圖說不小於10級字。</li>
+      <li>若使用<b>AI生成文字</b>，或請植物醫學專家、其助理、植物診療師<b>協助撰寫</b>，請主動在報名資料標示。</li>
       <li>曾獲獎者再報同一組，須提出<b>具體新增成果與差異化內容</b>，由評審委員認定資格。</li>
       <li>現場操作組：得獎者及入圍者的參賽農產品會安排<b>當期農藥殘留檢驗</b>，不符合國家檢驗規定者取消資格。</li>
-      <li>各組前3名得獎者，獲獎後2年內須擔任<b>農業親善大使</b>（附件5-1同意書於報名時繳交）。</li>
-      <li>推薦函（附件9）雖非必繳，但屬有利參考資料：可洽各試驗改良場所、學研單位、農會或縣市政府的輔導人員。</li>
+      <li>各組前3名得獎者，獲獎後2年內須擔任<b>農業親善大使</b>（同意書於報名時繳交）。</li>
+      <li>推薦函（附件9）非必繳，但屬有利參考資料：可洽各試驗改良場所、學研單位、農會或縣市政府輔導人員。</li>
     </ul>
   </div>
   <div class="card">
@@ -242,391 +230,339 @@
 
 </main>
 
-<div id="printArea"></div>
-
 <footer>
-  本工具內容依「第五屆永續善農獎IPM Award選拔表揚計畫」評選辦法（委員確認版草案）整理，
-  正式規定以主辦單位公告為準。填寫內容只儲存在您自己的裝置，不會上傳。
+  本工具內容依「第五屆永續善農獎IPM Award選拔表揚計畫」評選辦法草案與第四屆報名表整理，
+  正式規定與表格以主辦單位公告為準。填寫內容只儲存在您自己的裝置，不會上傳。
 </footer>
 
 <script>
 "use strict";
 
-/* ---------- 共用 ---------- */
-/* 安全存取 localStorage：在沙盒、無痕或內嵌預覽環境不可用時，降級為記憶體，避免整頁渲染中斷 */
+/* ---------- 安全存取 localStorage（沙盒/無痕降級記憶體）---------- */
 var _mem = {};
 function lsGet(k){ try{ return localStorage.getItem(k); }catch(e){ return (k in _mem) ? _mem[k] : null; } }
 function lsSet(k,v){ try{ localStorage.setItem(k,v); }catch(e){ _mem[k] = v; } }
+
 function showScreen(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   window.scrollTo(0,0);
 }
 
-/* 截止倒數（115年10月15日 = 2026-10-15） */
-(function(){
-  const dl = new Date(2026,9,15,23,59,59);
-  const days = Math.ceil((dl - new Date())/86400000);
-  const bar = document.getElementById('deadlineBar');
-  if(days > 0){ bar.textContent = '報名截止（草案暫定）：民國115年10月15日 · 還剩 ' + days + ' 天，正式日期以公告為準'; }
-  else{ bar.textContent = '報名日期以主辦單位正式公告為準（草案暫定為民國115年10月15日）'; }
-})();
-
-/* ---------- 組別資料（依第五屆評選辦法草案） ---------- */
-const GROUPS = {
-  field:{
-    name:'現場操作組',
-    desc:'給實際從事農業生產、把IPM（作物有害生物整合管理）用在田間管理的農民或團體。評審會到田間實地查核。',
-    scoring:[
-      ['人力知識','45分','IPM原理認知及實際操作'],
-      ['社群組織','10分','IPM資訊取得與推廣'],
-      ['經濟效益','15分','防治紀錄、經濟成本分析'],
-      ['環境效益','30分','化學農藥風險減量成效、經營符合環境永續']
-    ],
-    docs:[
-      '基本報名表',
-      '二年內擔任農業親善大使同意書、報名資料聲明（附件5）',
-      '作物有害生物整合管理方法項目表（附件2）及相關佐證資料',
-      '最近1年化學農藥殘留檢驗紀錄與檢驗結果，或有機農產品／有機轉型期農產品／綠色保育標章證書'
-    ],
-    refDocs:'加分參考資料：第三方驗證標章文件（產銷履歷TGAP PLUS、產銷履歷、有機、綠色保育等）、試驗改良場所／學研單位／農會輔導人員推薦函（附件9）、其他有利佐證。',
-    steps:[
-      {t:'基本情況', s:'', q:'您種什麼作物？面積多大？在哪裡？做了幾年？（例：在雲林種設施小番茄0.8公頃，經營12年）', limit:0},
-      {t:'怎麼管理病蟲害', s:'人力知識 45分', q:'田裡主要的病蟲害是什麼？您怎麼發現、怎麼判斷要不要防治？用了哪些方法？（例：黃色黏板監測、性費洛蒙、天敵、套袋、輪作、必要時才安全用藥）', limit:0},
-      {t:'資訊與交流', s:'社群組織 10分', q:'您從哪裡學IPM？（改良場、農會課程、產銷班…）有沒有參加組織？有沒有把經驗教給別人？', limit:0},
-      {t:'紀錄與收益', s:'經濟效益 15分', q:'有沒有留防治紀錄或生產紀錄？改用IPM之後，農藥錢、產量、售價有什麼改變？', limit:0},
-      {t:'農藥減量與友善環境', s:'環境效益 30分', q:'化學農藥用量減少了多少？有沒有其他友善環境的做法？（草生栽培、保護天敵、資材減量…）', limit:0},
-      {t:'成果概述（濃縮版）', s:'附件2「IPM執行成果概述」欄位，限500字', q:'用500字以內，把上面的重點濃縮成一段話。寫不出來沒關係，先按「產生草稿」，再從草稿裡挑重點。', limit:500}
-    ]
-  },
-  tech:{
-    name:'技術創新組',
-    desc:'給研發IPM新技術、新資材、新應用策略，並改善或解決產業問題的個人或團體。第2階段須簡報說明，並提供3至5處應用場域供實地審查。',
-    scoring:[
-      ['研究創新','45分','創新技術實際解決產業關鍵問題、提升病蟲害管理效能'],
-      ['社群組織','10分','團隊協作研發，以出版品、活動推廣技術'],
-      ['經濟效益','20分','技術產業應用落實程度與實際效益'],
-      ['環境效益','25分','農藥減量、高風險農藥替代、環境友善'],
-      ['自主研發（加分）','0-10分','經費來源以非公部門為主']
-    ],
-    docs:[
-      '基本報名表',
-      '二年內擔任農業親善大使同意書、報名資料聲明（附件5）',
-      '作物有害生物整合管理技術成果資料表（附件3）及相關佐證資料'
-    ],
-    refDocs:'加分參考資料：近5年相關研發成果（研究報告、出版品，3件以內）、得獎證明、專利、技轉資料、產業應用報告、學研單位推薦函（附件9）。',
-    steps:[
-      {t:'技術名稱與要解決的問題', s:'', q:'您的技術叫什麼？它要解決什麼產業問題？（例：某某作物的某病蟲害沒有好用藥劑、抗藥性嚴重…）', limit:1000},
-      {t:'技術內容與創新點', s:'研究創新 45分', q:'技術的內容是什麼？跟現有做法比，新在哪裡？怎麼跟既有的IPM管理模式結合、提升防治效果？', limit:1000},
-      {t:'團隊與推廣', s:'社群組織 10分', q:'團隊怎麼分工合作？有沒有透過論文、手冊、講習、觀摩會等方式推廣這項技術？', limit:1000},
-      {t:'產業應用與效益', s:'經濟效益 20分', q:'技術實際被誰採用？用在多大面積或多少場域？替農民省了多少成本、增加多少收益？', limit:1000},
-      {t:'環境效益', s:'環境效益 25分', q:'用了這項技術後，化學農藥減少多少？有沒有替代高毒性高風險農藥？對環境有什麼好處？', limit:1000},
-      {t:'研發經費來源', s:'自主研發加分 0-10分', q:'研發經費主要來自哪裡？若以非公部門（自籌、企業）為主，請說明。', limit:1000}
-    ]
-  },
-  promo:{
-    name:'行銷推廣組',
-    desc:'給從事IPM推廣、輔導、教育、行銷或採購IPM產品的個人或團體。須在公告日起前2年內有辦理行銷或推廣活動的實績。第2階段須簡報說明。',
-    scoring:[
-      ['人力知識','15分','對IPM原理正確認知，採用多元推廣方式'],
-      ['社會效益','45分','提升農友、通路、消費者對IPM的認知與認同，進而採取行動'],
-      ['經濟效益','15分','提升IPM農產品產值等產業效益'],
-      ['環境效益','25分','農藥減量成效、擴大IPM耕作面積'],
-      ['自主推廣（加分）','0-10分','經費來源以非公部門為主']
-    ],
-    docs:[
-      '基本報名表',
-      '二年內擔任農業親善大使同意書、報名資料聲明（附件5）',
-      '作物有害生物整合管理行銷推廣成果資料表（附件4-1）及相關佐證資料'
-    ],
-    refDocs:'加分參考資料：近2年推廣活動成果佐證（活動、課程、田間示範、顧問服務、出版品文宣等，5件以內）、近2年採購或行銷IPM農產品證明、縣市政府／改良場／農會推薦函（附件9）、得獎證明。',
-    steps:[
-      {t:'推廣對象與做法', s:'', q:'您主要向誰推廣IPM？（農友、通路、消費者…）用什麼方式？（課程、示範、行銷活動、採購契作…）', limit:1000},
-      {t:'專業與多元推廣', s:'人力知識 15分', q:'您如何確保推廣內容正確？（自身專業、與專家合作…）用了哪些不同形式的推廣方式？', limit:1000},
-      {t:'認知與行動的改變', s:'社會效益 45分', q:'推廣之後，對象有什麼改變？（多少農友改用IPM、通路開始採購、消費者願意買…）盡量寫出人數、場次、通路數等數字。', limit:1000},
-      {t:'產業效益', s:'經濟效益 15分', q:'IPM農產品的銷量、價格或產值有沒有提升？有沒有具體案例或數字？', limit:1000},
-      {t:'環境效益', s:'環境效益 25分', q:'因為您的推廣，帶動多少面積導入IPM？化學農藥減量的成效如何？', limit:1000},
-      {t:'推廣經費來源', s:'自主推廣加分 0-10分', q:'推廣經費主要來自哪裡？若以非公部門（自籌、企業）為主，請說明。', limit:1000}
-    ]
-  }
+/* ---------- 組別基本資訊（測驗結果用）---------- */
+var GROUPS = {
+  field:{ name:'現場操作組',
+    desc:'給實際從事農業生產、把IPM用在田間管理的農民或團體。評審會到田間實地查核。' },
+  tech:{ name:'技術創新組',
+    desc:'給研發IPM新技術、新資材、新應用策略，並已移轉、推廣出去的個人或團體。第2階段須簡報並提供3至5處應用場域。' },
+  promo:{ name:'行銷推廣組',
+    desc:'給從事IPM推廣、輔導、教育、行銷或採購IPM產品的個人或團體。近2年須有實績。' }
 };
 
 /* ---------- 分組測驗 ---------- */
-const QUIZ = {
-  q1:{
-    num:'第 1 題', text:'您想被表揚的事蹟，主要是哪一類？',
+var QUIZ = {
+  q1:{ num:'第 1 題', text:'您想被表揚的事蹟，主要是哪一類？',
     hint:'如果好幾項都有，選「材料最完整、最想被看見」的那一項。',
     opts:[
       {label:'我自己種植、生產農產品，用IPM方法管理病蟲害', next:'f1', set:'field'},
       {label:'我研發了新技術、新資材或新方法，想推廣給其他農民或單位使用', next:'techGate1', set:'tech'},
       {label:'我做的是推廣、輔導、教育、行銷，或採購IPM產品', next:'p1', set:'promo'},
       {label:'我不確定什麼是IPM，想先了解', next:'explain'}
-    ]
-  },
-  explain:{
-    num:'說明', text:'什麼是IPM（作物有害生物整合管理）？',
+    ] },
+  explain:{ num:'說明', text:'什麼是IPM（作物有害生物整合管理）？',
     hint:'簡單說：不是只靠農藥，而是先監測田裡的病蟲害，優先用栽培管理、物理防治、生物防治等方法，必要時才正確、安全地用藥，讓化學農藥的風險降到最低。如果您平常就是這樣管理田區，就適合報名。',
-    opts:[
-      {label:'我了解了，回到第1題', next:'q1'},
-      {label:'我想直接請主辦單位協助判斷', next:'contact'}
-    ]
-  },
-  contact:{
-    num:'建議', text:'直接聯絡主辦單位最快',
+    opts:[ {label:'我了解了，回到第1題', next:'q1'}, {label:'我想直接請主辦單位協助判斷', next:'contact'} ] },
+  contact:{ num:'建議', text:'直接聯絡主辦單位最快',
     hint:'官方LINE：@940rvuff｜電話 (02) 2585-1775 分機32（鄧翠怡 助理研究員）。告訴他們您平常怎麼管理病蟲害，他們會協助您判斷適合的組別。',
-    opts:[ {label:'回首頁', next:'HOME'} ]
-  },
-  /* 現場操作組資格 */
-  f1:{
-    num:'第 2 題', text:'您（或團隊成員）是實際經營農業生產的人嗎？',
+    opts:[ {label:'回首頁', next:'HOME'} ] },
+  f1:{ num:'第 2 題', text:'您（或團隊成員）是實際經營農業生產的人嗎？',
     hint:'現場操作組的團體成員限由經營者組成（例如農場負責人、聘僱人員，或多位農場經營者組隊）。',
-    opts:[
-      {label:'是，我是實際經營者（或團隊都是經營者）', next:'f2'},
-      {label:'不是，我主要是輔導或研究人員', next:'f1x'}
-    ]
-  },
-  f1x:{
-    num:'提醒', text:'您可能更適合其他組',
+    opts:[ {label:'是，我是實際經營者（或團隊都是經營者）', next:'f2'},
+      {label:'不是，我主要是輔導或研究人員', next:'f1x'} ] },
+  f1x:{ num:'提醒', text:'您可能更適合其他組',
     hint:'現場操作組要求實際從事農業生產。如果您的事蹟以輔導推廣為主，建議報行銷推廣組；以技術研發為主，建議報技術創新組。',
-    opts:[
-      {label:'改看行銷推廣組', next:'p1', set:'promo'},
+    opts:[ {label:'改看行銷推廣組', next:'p1', set:'promo'},
       {label:'改看技術創新組', next:'techGate1', set:'tech'},
-      {label:'我還是想報現場操作組（先洽主辦單位確認資格）', next:'f2', warn:'您回答「非實際經營者」，現場操作組資格請先洽主辦單位確認。'}
-    ]
-  },
-  f2:{
-    num:'第 3 題', text:'您能提供這兩種文件其中一種嗎？',
+      {label:'我還是想報現場操作組（先洽主辦單位確認資格）', next:'f2', warn:'您回答「非實際經營者」，現場操作組資格請先洽主辦單位確認。'} ] },
+  f2:{ num:'第 3 題', text:'您能提供這兩種文件其中一種嗎？',
     hint:'A. 最近1年的化學農藥殘留檢驗紀錄與結果；或 B. 有機農產品／有機轉型期農產品驗證，或綠色保育標章證書。',
-    opts:[
-      {label:'可以，我有其中一種', next:'f3'},
-      {label:'目前沒有', next:'f3', warn:'農藥殘留檢驗紀錄（或有機／綠保證書）是現場操作組的必繳資料，請在報名截止前先安排檢驗。可洽當地農會或改良場詢問檢驗管道。'}
-    ]
-  },
-  f3:{
-    num:'第 4 題', text:'您的參賽作物面積，有超過該作物全國農戶平均耕作面積嗎？',
+    opts:[ {label:'可以，我有其中一種', next:'f3'},
+      {label:'目前沒有', next:'f3', warn:'農藥殘留檢驗紀錄（或有機／綠保證書）是現場操作組的必繳資料，請在報名截止前先安排檢驗。可洽當地農會或改良場詢問檢驗管道。'} ] },
+  f3:{ num:'第 4 題', text:'您的參賽作物面積，有超過該作物全國農戶平均耕作面積嗎？',
     hint:'不確定平均面積是多少，可以洽主辦單位詢問。新興作物、設施栽培、特殊作物、具示範價值或原住民重要民俗作物，面積未達平均也可由審查委員依實際情況認定。',
-    opts:[
-      {label:'有超過', next:'last'},
+    opts:[ {label:'有超過', next:'last'},
       {label:'沒有，但屬於設施栽培／新興／特殊／示範／原民民俗作物', next:'last', warn:'面積未達全國平均，但您勾選了可由審查委員認定的類型；報名前建議先洽主辦單位確認。'},
-      {label:'沒有超過，也不確定', next:'last', warn:'參賽作物面積原則應大於該作物全國農戶平均耕作面積。請先洽主辦單位（LINE @940rvuff）確認您的作物是否符合。'}
-    ]
-  },
-  /* 創新鑑別關卡：分辨「田間創意做法（現場操作組）」與「可移轉的技術（技術創新組）」 */
-  techGate1:{
-    num:'第 2 題', text:'先確認一下：您的身分比較接近哪一種？',
+      {label:'沒有超過，也不確定', next:'last', warn:'參賽作物面積原則應大於該作物全國農戶平均耕作面積。請先洽主辦單位（LINE @940rvuff）確認您的作物是否符合。'} ] },
+  techGate1:{ num:'第 2 題', text:'先確認一下：您的身分比較接近哪一種？',
     hint:'這關係到您適合技術創新組還是現場操作組。有創意的做法，兩組都可能，關鍵在下一題。',
-    opts:[
-      {label:'我是實際種田、生產的農民或農場（以經營自己的田為主）', next:'techGate2farmer'},
-      {label:'我是研發單位、學校、改良場，或以技術開發、產品推廣為主業的團隊或公司', next:'techGate2rnd'}
-    ]
-  },
-  techGate2farmer:{
-    num:'第 3 題', text:'您研發的做法或工具，目前是什麼狀態？',
+    opts:[ {label:'我是實際種田、生產的農民或農場（以經營自己的田為主）', next:'techGate2farmer'},
+      {label:'我是研發單位、學校、改良場，或以技術開發、產品推廣為主業的團隊或公司', next:'techGate2rnd'} ] },
+  techGate2farmer:{ num:'第 3 題', text:'您研發的做法或工具，目前是什麼狀態？',
     hint:'技術創新組看的是「別人也能直接拿去用」的技術，第2階段還要提供3至5處應用場域。',
-    opts:[
-      {label:'已經有其他農民或單位在用，或已技轉、授權、申請專利、做成產品', next:'techBoth'},
+    opts:[ {label:'已經有其他農民或單位在用，或已技轉、授權、申請專利、做成產品', next:'techBoth'},
       {label:'目前主要用在自己的田，還沒移轉給別人', next:'f1', set:'field',
-        warn:'您的做法用在自己的田、還沒移轉給別人，比較適合「現場操作組」。田間的創意做法在現場操作組一樣是加分亮點——第四屆得獎農友李昆桓自己研發「蜂球投放機」裝在中耕機上，就是以現場操作組獲獎。技術創新組看的是「別人也能用、可移轉的技術」，並要提供3至5處應用場域。以下改用現場操作組繼續。'}
-    ]
-  },
-  techGate2rnd:{
-    num:'第 3 題', text:'您的技術目前是什麼狀態？',
+        warn:'您的做法用在自己的田、還沒移轉給別人，比較適合「現場操作組」。田間的創意做法在現場操作組一樣是加分亮點——第四屆得獎農友李昆桓自己研發「蜂球投放機」裝在中耕機上，就是以現場操作組獲獎。技術創新組看的是「別人也能用、可移轉的技術」，並要提供3至5處應用場域。以下改用現場操作組繼續。'} ] },
+  techGate2rnd:{ num:'第 3 題', text:'您的技術目前是什麼狀態？',
     hint:'技術創新組報名應以「已有應用成果的技術研究創新」為主。',
-    opts:[
-      {label:'已有實際應用成果，且已技轉、授權、專利或供他人採用', next:'last', set:'tech'},
-      {label:'技術還在研究中，尚無應用實績', next:'last', set:'tech', warn:'報名應以已有的創新事蹟為主，且第2階段實地審查須提供3至5處應用場域。若應用實績還不足，可考慮下一屆再報，或先洽主辦單位。'}
-    ]
-  },
-  techBoth:{
-    num:'提醒', text:'您的情況兩組都可能適合',
+    opts:[ {label:'已有實際應用成果，且已技轉、授權、專利或供他人採用', next:'last', set:'tech'},
+      {label:'技術還在研究中，尚無應用實績', next:'last', set:'tech', warn:'報名應以已有的創新事蹟為主，且第2階段實地審查須提供3至5處應用場域。若應用實績還不足，可考慮下一屆再報，或先洽主辦單位。'} ] },
+  techBoth:{ num:'提醒', text:'您的情況兩組都可能適合',
     hint:'您是實際生產者，技術也已移轉給別人。現場操作組與技術創新組可能都適合，建議洽主辦單位確認以哪一組報名最有利。您想先看哪一組？',
-    opts:[
-      {label:'先看技術創新組的資格與評分', next:'last', set:'tech'},
-      {label:'先看現場操作組的資格與評分', next:'f1', set:'field'},
-      {label:'直接聯絡主辦單位', next:'contact'}
-    ]
-  },
-  /* 行銷推廣組資格 */
-  p1:{
-    num:'第 2 題', text:'公告日起往前2年內，您有辦理過IPM行銷或推廣活動的實績嗎？',
+    opts:[ {label:'先填技術創新組報名表', next:'last', set:'tech'},
+      {label:'先填現場操作組報名表', next:'f1', set:'field'},
+      {label:'直接聯絡主辦單位', next:'contact'} ] },
+  p1:{ num:'第 2 題', text:'公告日起往前2年內，您有辦理過IPM行銷或推廣活動的實績嗎？',
     hint:'例如：推廣活動、輔導培訓課程、田間示範、擔任防治顧問、出版品文宣、採購或行銷IPM農產品。',
-    opts:[
-      {label:'有', next:'last'},
-      {label:'沒有或不滿2年內', next:'last', warn:'行銷推廣組要求「公告日起前2年具有辦理IPM行銷或推廣活動之實績」。若實績不在近2年內，請先洽主辦單位確認資格。'}
-    ]
-  },
-  /* 共同題 */
-  last:{
-    num:'最後一題', text:'您以前得過永續善農獎（同一組）嗎？',
-    hint:'',
-    opts:[
-      {label:'沒有，第一次報名或未曾得獎', next:'RESULT'},
-      {label:'有，我是曾經的得獎者', next:'RESULT', warn:'曾獲獎者再報同一組，須提出具體「新增成果、差異化內容、創新性或突破性」，由評審委員認定參賽資格。報名資料請聚焦得獎後的新事蹟。'}
-    ]
-  }
+    opts:[ {label:'有', next:'last'},
+      {label:'沒有或不滿2年內', next:'last', warn:'行銷推廣組要求「公告日起前2年具有辦理IPM行銷或推廣活動之實績」。若實績不在近2年內，請先洽主辦單位確認資格。'} ] },
+  last:{ num:'最後一題', text:'您以前得過永續善農獎（同一組）嗎？', hint:'',
+    opts:[ {label:'沒有，第一次報名或未曾得獎', next:'RESULT'},
+      {label:'有，我是曾經的得獎者', next:'RESULT', warn:'曾獲獎者再報同一組，須提出具體「新增成果、差異化內容、創新性或突破性」，由評審委員認定參賽資格。報名資料請聚焦得獎後的新事蹟。'} ] }
 };
 
-let currentGroup = null;
-let quizWarnings = [];
-let quizHistory = [];
-
-function startQuiz(){
-  currentGroup = null; quizWarnings = []; quizHistory = [];
-  renderQ('q1'); showScreen('scr-quiz');
-}
+var currentGroup = null, quizWarnings = [], quizHistory = [];
+function startQuiz(){ currentGroup=null; quizWarnings=[]; quizHistory=[]; renderQ('q1'); showScreen('scr-quiz'); }
 function renderQ(key){
-  const q = QUIZ[key];
-  quizHistory.push(key);
-  document.getElementById('qnum').textContent = q.num;
-  document.getElementById('qtext').textContent = q.text;
-  document.getElementById('qhint').textContent = q.hint || '';
-  const box = document.getElementById('qopts');
-  box.innerHTML = '';
-  q.opts.forEach(o=>{
-    const b = document.createElement('button');
-    b.className = 'optbtn';
-    b.textContent = o.label;
-    b.onclick = ()=>{
-      if(o.set) currentGroup = o.set;
+  var q=QUIZ[key]; quizHistory.push(key);
+  document.getElementById('qnum').textContent=q.num;
+  document.getElementById('qtext').textContent=q.text;
+  document.getElementById('qhint').textContent=q.hint||'';
+  var box=document.getElementById('qopts'); box.innerHTML='';
+  q.opts.forEach(function(o){
+    var b=document.createElement('button'); b.className='optbtn'; b.textContent=o.label;
+    b.onclick=function(){
+      if(o.set) currentGroup=o.set;
       if(o.warn) quizWarnings.push(o.warn);
-      if(o.next === 'RESULT') showResult();
-      else if(o.next === 'HOME') showScreen('scr-home');
+      if(o.next==='RESULT') showResult();
+      else if(o.next==='HOME') showScreen('scr-home');
       else renderQ(o.next);
     };
     box.appendChild(b);
   });
 }
-function quizBack(){
-  quizHistory.pop();
-  const prev = quizHistory.pop();
-  if(prev) renderQ(prev); else showScreen('scr-home');
-}
+function quizBack(){ quizHistory.pop(); var prev=quizHistory.pop(); if(prev) renderQ(prev); else showScreen('scr-home'); }
 function showResult(){
-  const g = GROUPS[currentGroup];
-  if(!g){ showScreen('scr-home'); return; }
-  document.getElementById('resultGroup').textContent = g.name;
-  document.getElementById('resultDesc').textContent = g.desc;
-  const wbox = document.getElementById('resultWarnings');
-  wbox.innerHTML = '';
-  quizWarnings.forEach(w=>{
-    const d = document.createElement('div');
-    d.className = 'warn'; d.textContent = '注意：' + w;
-    wbox.appendChild(d);
-  });
-  let t = '<table><tr><th>評分項目</th><th>配分</th><th>看什麼</th></tr>';
-  g.scoring.forEach(r=>{ t += '<tr><td>'+r[0]+'</td><td>'+r[1]+'</td><td>'+r[2]+'</td></tr>'; });
-  t += '</table>';
-  document.getElementById('resultScoring').innerHTML = t;
-  const dl = document.getElementById('resultDocs');
-  dl.innerHTML = '';
-  g.docs.forEach(d=>{
-    const li = document.createElement('li'); li.textContent = d; dl.appendChild(li);
-  });
+  var g=GROUPS[currentGroup]; if(!g){ showScreen('scr-home'); return; }
+  document.getElementById('resultGroup').textContent=g.name;
+  document.getElementById('resultDesc').textContent=g.desc;
+  var wbox=document.getElementById('resultWarnings'); wbox.innerHTML='';
+  quizWarnings.forEach(function(w){ var d=document.createElement('div'); d.className='warn'; d.textContent='注意：'+w; wbox.appendChild(d); });
   showScreen('scr-result');
 }
 
-/* ---------- 資料準備 ---------- */
-function goPrep(groupKey){
-  currentGroup = groupKey;
-  const g = GROUPS[groupKey];
-  document.getElementById('prepTitle').textContent = g.name + '：報名資料準備';
-  /* 必繳清單 */
-  const cl = document.getElementById('prepChecklist');
-  cl.innerHTML = '';
-  g.docs.forEach((d,i)=>{
-    const li = document.createElement('li');
-    const cb = document.createElement('input');
-    cb.type = 'checkbox';
-    const key = 'ipm_chk_' + groupKey + '_' + i;
-    cb.checked = lsGet(key) === '1';
-    cb.onchange = ()=> lsSet(key, cb.checked ? '1' : '0');
-    const span = document.createElement('span');
-    span.textContent = d;
-    li.appendChild(cb); li.appendChild(span);
-    cl.appendChild(li);
+/* ---------- 報名表欄位定義（依第四屆報名表）---------- */
+var COMMON_BASIC = { title:'一、基本資料', fields:[
+  {id:'entry_type', label:'報名類別', type:'radio', options:['個人','團體/單位']},
+  {id:'name', label:'姓名（個人報名）／團體單位名稱（團體報名）', type:'text'},
+  {id:'members', label:'團體參賽成員姓名（團體報名才填）', type:'text', hint:'團隊成員限由經營／相關人員組成'},
+  {id:'org', label:'所屬單位', type:'text'},
+  {id:'contact_name', label:'聯絡人姓名／職稱', type:'text'},
+  {id:'phone', label:'聯絡人手機號碼', type:'text'},
+  {id:'email', label:'聯絡人電子郵件信箱', type:'text'},
+  {id:'address', label:'聯絡人地址', type:'text'},
+  {id:'coop', label:'是否與試驗改良場所／學研單位／儲備植物醫師合作或接受輔導', type:'radio', options:['否','是']},
+  {id:'coop_detail', label:'若「是」，合作或輔導單位與姓名', type:'text'}
+]};
+
+var FORMS = {
+  field:{ groupName:'現場操作組', formName:'作物有害生物整合管理方法項目表（附件2）',
+    sections:[
+      COMMON_BASIC,
+      { title:'二、參賽作物相關資料', fields:[
+        {id:'crop_class', label:'參賽作物分類', type:'radio', options:['稻米','果樹','蔬菜','雜糧及特作','其他']},
+        {id:'crop_name', label:'參賽作物別', type:'text'},
+        {id:'crop_region', label:'參賽作物耕作地區', type:'text'},
+        {id:'land_no', label:'參賽作物田區地號（縣市、鄉鎮、地段、地號）', type:'textarea'},
+        {id:'total_area', label:'參賽作物總面積（公頃）', type:'text'},
+        {id:'ipm_area', label:'IPM操作面積（公頃）', type:'text', hint:'IPM操作田區面積至少需為總面積的20%'},
+        {id:'yield', label:'每期單位面積產量', type:'text', hint:'例：每年2期，每期鮮重3000公斤/公頃'},
+        {id:'plant_method', label:'主要栽種方式', type:'checkbox', options:['露天','設施','網室','其他']},
+        {id:'harvest', label:'採收月份（例：3月至6月）', type:'text'},
+        {id:'cert', label:'已獲得之認證（需附佐證資料）', type:'checkbox', options:['有機','有機轉型期','產銷履歷升級版TGAP PLUS','產銷履歷','其他','無']}
+      ]},
+      { title:'三、IPM執行成果', fields:[
+        {id:'summary', label:'IPM執行成果概述', type:'textarea', maxlen:500,
+          hint:'請簡述您把IPM方法用在田間的重點與特色（500字內）'},
+        {id:'pest_ipm', label:'田裡主要病蟲害有哪些？各用了哪些方法管理？', type:'textarea',
+          hint:'對應「人力知識」評分。請具體寫：害物名稱、您怎麼發現/判斷、用了哪些做法（耐病品種、田間衛生、黏紙、費洛蒙、天敵、微生物製劑、免登資材，必要時才安全用藥）'},
+        {id:'econ', label:'防治紀錄與經濟效益', type:'textarea',
+          hint:'對應「經濟效益」。有沒有留防治／生產紀錄？改用IPM後，農藥成本、產量、售價的變化'},
+        {id:'env', label:'環境效益', type:'textarea',
+          hint:'對應「環境效益」。化學農藥減量情形，以及對天敵、水質、土壤友善的作法'}
+      ]}
+    ]},
+  tech:{ groupName:'技術創新組', formName:'作物有害生物整合管理技術成果資料表（附件3）',
+    note:'各欄請簡明扼要（1000字內），聚焦「參賽技術」，勿羅列團隊所有成果。',
+    sections:[
+      COMMON_BASIC,
+      { title:'二、參賽技術簡介', fields:[
+        {id:'tech_name', label:'成果（技術）名稱', type:'text'},
+        {id:'tech_type', label:'技術類型（可複選）', type:'checkbox', options:['新技術','新資材','新應用策略','其他']},
+        {id:'trl', label:'技術成熟度階段', type:'select', options:['TRL1-4（可行性驗證）','TRL5（實驗室驗證原型）','TRL6（實際環境驗證）','TRL7（示範/成本評估）','TRL8（商業化/技轉少量使用）','TRL9（持續生產普及）']},
+        {id:'summary', label:'成果摘要', type:'textarea', maxlen:500, hint:'本技術解決的問題、執行重點與成果（約500字）'},
+        {id:'innovation', label:'創新性', type:'textarea', maxlen:1000, hint:'與既有技術的差異、如何整合到田間管理、提升防治效能的比率'},
+        {id:'community', label:'社群組織', type:'textarea', maxlen:1000, hint:'出版、發表、推廣、獲獎，以及跨單位協作情形'},
+        {id:'econ', label:'產業應用及經濟效益', type:'textarea', maxlen:1000, hint:'技術導入應用程度、創造的產業價值、使用者收益增加（如降低多少田間管理成本）'},
+        {id:'env', label:'對環境永續之效益與影響', type:'textarea', maxlen:1000, hint:'農藥風險減量、替代高毒性高風險農藥、對淨零碳排的貢獻'},
+        {id:'case', label:'應用案例', type:'textarea', maxlen:1000, hint:'至少一項實際應用：應用者、概況、應用多久、場域及規模、成效、應用者聯絡資訊'},
+        {id:'fund_amount', label:'投入研發與推廣經費約（元）', type:'text'},
+        {id:'fund_public', label:'其中來自公部門的比例（%）', type:'text'}
+      ]}
+    ]},
+  promo:{ groupName:'行銷推廣組', formName:'作物有害生物整合管理行銷推廣成果資料表（附件4）',
+    note:'各欄請簡明扼要（1000字內），並明確標示與IPM的關連性。',
+    sections:[
+      COMMON_BASIC,
+      { title:'二、行銷推廣成果簡介', fields:[
+        {id:'intro', label:'參賽者簡介', type:'textarea', maxlen:500, hint:'主要業務項目，及與IPM行銷推廣的關連性（500字內）'},
+        {id:'strategy', label:'主要推廣策略（至多3項）', type:'checkbox', options:['輔導培訓課程','田間現場示範','擔任輔導顧問','出版推廣文宣品','採購IPM農產品','行銷推廣IPM農產品','其他']},
+        {id:'summary', label:'成果摘要', type:'textarea', maxlen:1000, hint:'主要推廣策略、目標對象、成果及效益'},
+        {id:'knowledge', label:'人力知識', type:'textarea', maxlen:1000, hint:'對IPM的認知、知識從哪來、辦過的推廣活動、是否聘用植醫協助'},
+        {id:'social', label:'社會效益', type:'textarea', maxlen:1000, hint:'用哪些推廣方式（講習、文宣、網站、展覽、食農教育），對農友/通路/消費者認知與行為的改變（附案例、問卷數據）'},
+        {id:'econ', label:'經濟效益', type:'textarea', maxlen:1000, hint:'協助建立品牌、擴大通路、提升品質售價；採購或推廣IPM農產品的規模與成效'},
+        {id:'env', label:'對環境永續之效益與影響', type:'textarea', maxlen:1000, hint:'協作農友達成多少化學農藥減量、擴大多少IPM面積、生物友善環境'},
+        {id:'case', label:'應用案例', type:'textarea', maxlen:1000, hint:'至少一項實際行銷推廣案例：目標對象、推廣情形、推廣成效'},
+        {id:'fund_amount', label:'近2年投入IPM行銷推廣經費約（元）', type:'text'},
+        {id:'fund_public', label:'其中來自公部門的比例（%）', type:'text'},
+        {id:'plan', label:'得獎後IPM行銷推廣活動規劃', type:'textarea', hint:'得獎者須於獲獎後2年內辦理至少2場次IPM行銷推廣活動，請概述規劃'}
+      ]}
+    ]}
+};
+
+/* 各組必附文件（產生報名表時列於文末）*/
+var REQUIRED_DOCS = {
+  field:['基本報名表（本表）','農業親善大使同意書、報名資料聲明（附件5）〔需簽名／用印〕',
+    '作物有害生物整合管理方法項目表（附件2）及佐證資料〔田間照片、施藥紀錄、資材購買紀錄等〕',
+    '最近1年化學農藥殘留檢驗紀錄與結果，或有機／有機轉型期／綠色保育標章證書'],
+  tech:['基本報名表（本表）','農業親善大使同意書、報名資料聲明（附件5）〔需簽名／用印〕',
+    '作物有害生物整合管理技術成果資料表（附件3）及佐證資料〔研究報告、專利、技轉、應用報告等〕'],
+  promo:['基本報名表（本表）','農業親善大使同意書、報名資料聲明（附件5）〔需簽名／用印〕',
+    '作物有害生物整合管理行銷推廣成果資料表（附件4）及佐證資料〔活動成果、文宣、採購證明等〕']
+};
+
+/* ---------- 產生填寫表單 ---------- */
+function fkey(g,fid){ return 'ipmf_'+g+'_'+fid; }
+
+function goForm(group){
+  currentGroup=group;
+  var form=FORMS[group];
+  document.getElementById('formTitle').textContent=form.groupName+'：'+form.formName;
+  var box=document.getElementById('formFields'); box.innerHTML='';
+  if(form.note){ var n=document.createElement('div'); n.className='info'; n.style.fontSize='16px'; n.textContent='填寫提醒：'+form.note; box.appendChild(n); }
+  form.sections.forEach(function(sec){
+    var h=document.createElement('div'); h.className='sec-title'; h.textContent=sec.title; box.appendChild(h);
+    sec.fields.forEach(function(f){ box.appendChild(renderField(group,f)); });
   });
-  document.getElementById('prepRefDocs').textContent = g.refDocs;
-  /* 引導問題 */
-  const stepsBox = document.getElementById('prepSteps');
-  stepsBox.innerHTML = '';
-  g.steps.forEach((st,i)=>{
-    const div = document.createElement('div');
-    div.className = 'step';
-    const h = document.createElement('h3');
-    h.textContent = (i+1) + '. ' + st.t;
-    div.appendChild(h);
-    if(st.s){
-      const sc = document.createElement('div');
-      sc.className = 'score'; sc.textContent = '對應評分：' + st.s;
-      div.appendChild(sc);
-    }
-    const p = document.createElement('p');
-    p.className = 'hint'; p.textContent = st.q;
-    div.appendChild(p);
-    const ta = document.createElement('textarea');
-    const key = 'ipm_txt_' + groupKey + '_' + i;
-    ta.id = key;
-    ta.value = lsGet(key) || '';
-    const counter = document.createElement('div');
-    counter.className = 'counter';
-    const updateCount = ()=>{
-      const n = ta.value.length;
-      if(st.limit > 0){
-        counter.textContent = n + ' / ' + st.limit + ' 字';
-        counter.className = 'counter' + (n > st.limit ? ' over' : '');
-      }else{
-        counter.textContent = n + ' 字';
-      }
-    };
-    ta.oninput = ()=>{ lsSet(key, ta.value); updateCount(); };
-    updateCount();
-    div.appendChild(ta); div.appendChild(counter);
-    stepsBox.appendChild(div);
-  });
-  document.getElementById('draftCard').style.display = 'none';
-  showScreen('scr-prep');
+  updateProgress();
+  document.getElementById('formResultCard').style.display='none';
+  showScreen('scr-form');
 }
 
-function makeDraft(){
-  const g = GROUPS[currentGroup];
-  let out = '【' + g.name + '】報名內容草稿\n';
-  out += '（產生日期：' + new Date().toLocaleDateString('zh-TW') + '，本草稿供填寫官方附件時參考）\n\n';
-  g.steps.forEach((st,i)=>{
-    const v = (document.getElementById('ipm_txt_' + currentGroup + '_' + i) || {}).value || '';
-    out += '■ ' + st.t + (st.s ? '（' + st.s + '）' : '') + '\n';
-    out += (v.trim() ? v.trim() : '（尚未填寫）') + '\n\n';
-  });
-  out += '─────────────\n必繳資料清點：\n';
-  g.docs.forEach((d,i)=>{
-    const done = lsGet('ipm_chk_' + currentGroup + '_' + i) === '1';
-    out += (done ? '☑ ' : '☐ ') + d + '\n';
-  });
-  out += '\n提醒：報名資料以50頁為限（含佐證附件）、A4、本文12級字以上。';
-  out += '若使用AI生成文字或請專家協助撰寫，請於報名資料聲明（附件5-2）主動標示。\n';
-  document.getElementById('draftOutput').textContent = out;
-  document.getElementById('draftCard').style.display = 'block';
-  document.getElementById('draftCard').scrollIntoView({behavior:'smooth'});
+function renderField(group,f){
+  var wrap=document.createElement('div'); wrap.className='field';
+  var lab=document.createElement('label'); lab.className='q'; lab.textContent=f.label; wrap.appendChild(lab);
+  if(f.hint){ var h=document.createElement('div'); h.className='fhint'; h.textContent=f.hint; wrap.appendChild(h); }
+  var key=fkey(group,f.id), saved=lsGet(key)||'';
+  if(f.type==='text'){
+    var inp=document.createElement('input'); inp.type='text'; inp.value=saved;
+    inp.oninput=function(){ lsSet(key,inp.value); updateProgress(); };
+    wrap.appendChild(inp);
+  } else if(f.type==='textarea'){
+    var ta=document.createElement('textarea'); ta.value=saved;
+    var cnt=document.createElement('div'); cnt.className='counter';
+    var upd=function(){ var n=ta.value.length;
+      if(f.maxlen){ cnt.textContent=n+' / '+f.maxlen+' 字'; cnt.className='counter'+(n>f.maxlen?' over':''); }
+      else cnt.textContent=n+' 字'; };
+    ta.oninput=function(){ lsSet(key,ta.value); upd(); updateProgress(); };
+    upd(); wrap.appendChild(ta); wrap.appendChild(cnt);
+  } else if(f.type==='radio' || f.type==='checkbox'){
+    var opts=document.createElement('div'); opts.className='opts';
+    var savedArr = saved? saved.split('|') : [];
+    f.options.forEach(function(op){
+      var l=document.createElement('label');
+      var i=document.createElement('input'); i.type=f.type; i.value=op; i.name=key;
+      if(savedArr.indexOf(op)>-1) i.checked=true;
+      i.onchange=function(){
+        var chosen;
+        if(f.type==='radio'){ chosen=[op]; }
+        else { chosen=[]; opts.querySelectorAll('input:checked').forEach(function(x){chosen.push(x.value);}); }
+        lsSet(key, chosen.join('|')); updateProgress();
+      };
+      l.appendChild(i); l.appendChild(document.createTextNode(' '+op)); opts.appendChild(l);
+    });
+    wrap.appendChild(opts);
+  } else if(f.type==='select'){
+    var sel=document.createElement('select');
+    var blank=document.createElement('option'); blank.value=''; blank.textContent='（請選擇）'; sel.appendChild(blank);
+    f.options.forEach(function(op){ var o=document.createElement('option'); o.value=op; o.textContent=op; if(saved===op)o.selected=true; sel.appendChild(o); });
+    sel.onchange=function(){ lsSet(key,sel.value); updateProgress(); };
+    wrap.appendChild(sel);
+  }
+  return wrap;
 }
-function copyDraft(){
-  const text = document.getElementById('draftOutput').textContent;
+
+function allFields(group){ var arr=[]; FORMS[group].sections.forEach(function(s){ s.fields.forEach(function(f){ arr.push(f); }); }); return arr; }
+function updateProgress(){
+  var fs=allFields(currentGroup), filled=0;
+  fs.forEach(function(f){ if((lsGet(fkey(currentGroup,f.id))||'').trim()) filled++; });
+  var pct=Math.round(filled/fs.length*100);
+  document.getElementById('progText').textContent='已填 '+filled+' / '+fs.length+' 欄（'+pct+'%）';
+  document.getElementById('progBar').style.width=pct+'%';
+}
+
+/* ---------- 產生報名表 ---------- */
+function esc(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function val(group,fid){ return (lsGet(fkey(group,fid))||'').trim(); }
+function disp(v){ return v? '<span class="val">'+esc(v).replace(/\|/g,'、')+'</span>' : '<span class="blank">（未填）</span>'; }
+
+function makeForm(){
+  var g=currentGroup, form=FORMS[g], h='';
+  h+='<h2>第五屆永續善農獎 IPM Award 報名表</h2>';
+  h+='<h2 style="font-size:18px;">'+form.groupName+'　'+esc(form.formName)+'</h2>';
+  h+='<p style="text-align:center;font-size:13px;color:#666;">（本表由「報名小幫手」依第四屆報名表欄位整理，正式投件請對照主辦單位公告的官方表格）</p>';
+  form.sections.forEach(function(sec){
+    h+='<h3>'+esc(sec.title)+'</h3><table>';
+    sec.fields.forEach(function(f){
+      h+='<tr><th style="width:38%;">'+esc(f.label)+'</th><td>'+disp(val(g,f.id))+'</td></tr>';
+    });
+    h+='</table>';
+  });
+  /* 簽名區：農業親善大使同意書 */
+  h+='<h3>農業親善大使同意書（獲獎者須簽署）</h3>';
+  h+='<div class="sign">本人（團隊／單位）同意於頒獎典禮後2年內，擔任農業部之農業親善大使，配合2場次以上示範觀摩會，協助推動IPM之操作與應用。<br><br>'+
+     '立同意書人：＿＿＿＿＿＿＿＿＿（簽章）　身分證字號／統一編號：＿＿＿＿＿＿＿＿＿<br><br>'+
+     '住址／公司地址：＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿　中華民國　＿＿　年　＿＿　月　＿＿　日</div>';
+  /* 必附文件 */
+  h+='<h3>應繳與佐證文件檢核</h3><ul>';
+  REQUIRED_DOCS[g].forEach(function(d){ h+='<li>☐ '+esc(d)+'</li>'; });
+  h+='<li>☐ （選填）推薦函（附件9）、第三方驗證標章、得獎／專利等有利佐證</li></ul>';
+  h+='<p style="font-size:13px;color:#666;">提醒：報名資料以50頁為限（含佐證附件），A4、本文12級字以上。若使用AI生成文字或請專家協助撰寫，請於報名資料聲明主動標示。正式報名表與規定以主辦單位115年8月公告為準。</p>';
+  document.getElementById('formOutput').innerHTML=h;
+  document.getElementById('formResultCard').style.display='block';
+  document.getElementById('formResultCard').scrollIntoView({behavior:'smooth'});
+}
+
+function printForm(){ window.print(); }
+function copyForm(){
+  var text=document.getElementById('formOutput').innerText;
   if(navigator.clipboard && navigator.clipboard.writeText){
-    navigator.clipboard.writeText(text).then(()=>alert('已複製！可以貼到 Word 或 LINE 給協助您的人。'),
-      ()=>fallbackCopy(text));
-  }else{ fallbackCopy(text); }
+    navigator.clipboard.writeText(text).then(function(){alert('已複製！可貼到 Word 或 LINE 給協助您的人。');},function(){fallbackCopy(text);});
+  } else fallbackCopy(text);
 }
 function fallbackCopy(text){
-  const ta = document.createElement('textarea');
-  ta.value = text; document.body.appendChild(ta);
-  ta.select();
-  try{ document.execCommand('copy'); alert('已複製！'); }
-  catch(e){ alert('複製失敗，請直接反白選取草稿文字後複製。'); }
+  var ta=document.createElement('textarea'); ta.value=text; document.body.appendChild(ta); ta.select();
+  try{ document.execCommand('copy'); alert('已複製！'); }catch(e){ alert('複製失敗，請手動反白複製。'); }
   document.body.removeChild(ta);
 }
-function printDraft(){
-  document.getElementById('printArea').textContent = document.getElementById('draftOutput').textContent;
-  document.getElementById('printArea').style.whiteSpace = 'pre-wrap';
-  window.print();
-}
+
+/* ---------- 截止倒數（草案暫定115年10月15日）---------- */
+(function(){
+  var dl=new Date(2026,9,15,23,59,59);
+  var days=Math.ceil((dl-new Date())/86400000);
+  var bar=document.getElementById('deadlineBar');
+  if(days>0) bar.textContent='報名截止（草案暫定）：民國115年10月15日 · 還剩 '+days+' 天，正式日期以公告為準';
+  else bar.textContent='報名日期以主辦單位正式公告為準（草案暫定為民國115年10月15日）';
+})();
 </script>
 </body>
 </html>
