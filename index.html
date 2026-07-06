@@ -350,6 +350,91 @@ function showResult(){
   showScreen('scr-result');
 }
 
+/* ---------- 害物清單元件：不同類別害物對應不同管理方法選項 ---------- */
+var PEST_CATEGORY_OPTIONS = {
+  '病害':{
+    detect:['定期巡田觀察','症狀比對或請專家鑑定','參考氣象資料（高溫多濕期等）研判','其他'],
+    control:['抗病品種','健康種苗','田間衛生（清除病葉病果）','輪作','改善通風或排水','土壤消毒','合理施肥','微生物製劑（如枯草桿菌、木黴菌）','免登記植物保護資材','化學農藥（必要時）','其他']
+  },
+  '蟲害':{
+    detect:['定期巡田觀察','黃色或藍色黏紙監測','費洛蒙誘捕器監測','請專家鑑定','其他'],
+    control:['黏紙誘捕','燈光誘引','防蟲網或設施','性費洛蒙','天敵昆蟲','微生物製劑（如蘇力菌、白殭菌）','套袋或覆蓋物','人工捕殺','免登記植物保護資材','化學農藥（必要時）','其他']
+  },
+  '草害':{
+    detect:['定期巡田觀察','其他'],
+    control:['人工或機械除草','草生栽培','覆蓋物（如黑布、稻殼）','輪作','化學除草劑（必要時）','其他']
+  },
+  '其他':{
+    detect:['定期巡田觀察','請專家鑑定','其他'],
+    control:['耕作管理調整','物理防治','生物防治','免登記植物保護資材','化學農藥（必要時）','其他']
+  }
+};
+function getPestEntries(group){
+  var raw=lsGet(fkey(group,'pest_entries'));
+  try{ var arr=raw?JSON.parse(raw):[]; return Array.isArray(arr)?arr:[]; }catch(e){ return []; }
+}
+function setPestEntries(group,arr){ lsSet(fkey(group,'pest_entries'), JSON.stringify(arr)); }
+function renderPestCheckGroup(label,options,selectedArr,onChange){
+  var wrap=document.createElement('div'); wrap.className='field';
+  var lab=document.createElement('label'); lab.className='q'; lab.style.fontSize='16px'; lab.textContent=label; wrap.appendChild(lab);
+  var opts=document.createElement('div'); opts.className='opts';
+  options.forEach(function(op){
+    var l=document.createElement('label');
+    var i=document.createElement('input'); i.type='checkbox'; i.value=op;
+    if(selectedArr && selectedArr.indexOf(op)>-1) i.checked=true;
+    i.onchange=function(){
+      var chosen=[]; opts.querySelectorAll('input:checked').forEach(function(x){chosen.push(x.value);});
+      onChange(chosen);
+    };
+    l.appendChild(i); l.appendChild(document.createTextNode(' '+op)); opts.appendChild(l);
+  });
+  wrap.appendChild(opts);
+  return wrap;
+}
+function renderPestSection(group,container){
+  container.innerHTML='';
+  var intro=document.createElement('div'); intro.className='info'; intro.style.fontSize='15px';
+  intro.textContent='不同害物（病害、蟲害、草害）處理方式不同，請依實際情形逐一新增，選了類別後才會出現對應的方法選項。可新增多筆。';
+  container.appendChild(intro);
+  var entries=getPestEntries(group);
+  if(entries.length===0){ entries=[{id:'p0',category:'蟲害',name:'',detect:[],control:[]}]; setPestEntries(group,entries); }
+  entries.forEach(function(entry,idx){
+    var box=document.createElement('div');
+    box.style.cssText='border:2px solid #b7d8bb; border-radius:12px; padding:14px; margin:12px 0; background:#fbfffb;';
+    var title=document.createElement('div'); title.style.cssText='font-weight:bold; font-size:18px; margin-bottom:6px; color:#1b5e20;';
+    title.textContent='害物 '+(idx+1);
+    box.appendChild(title);
+
+    var catWrap=document.createElement('div'); catWrap.className='field';
+    var catLab=document.createElement('label'); catLab.className='q'; catLab.textContent='這是哪一類？'; catWrap.appendChild(catLab);
+    var sel=document.createElement('select');
+    ['病害','蟲害','草害','其他'].forEach(function(c){ var o=document.createElement('option'); o.value=c; o.textContent=c; if(entry.category===c) o.selected=true; sel.appendChild(o); });
+    sel.onchange=function(){ entry.category=sel.value; entry.detect=[]; entry.control=[]; setPestEntries(group,entries); renderPestSection(group,container); };
+    catWrap.appendChild(sel); box.appendChild(catWrap);
+
+    var nameWrap=document.createElement('div'); nameWrap.className='field';
+    var nameLab=document.createElement('label'); nameLab.className='q'; nameLab.textContent='害物名稱'; nameWrap.appendChild(nameLab);
+    var nameHint=document.createElement('div'); nameHint.className='fhint'; nameHint.textContent='例如：東方果實蠅、灰黴病、馬齒莧'; nameWrap.appendChild(nameHint);
+    var inp=document.createElement('input'); inp.type='text'; inp.value=entry.name||'';
+    inp.oninput=function(){ entry.name=inp.value; setPestEntries(group,entries); updateProgress(); };
+    nameWrap.appendChild(inp); box.appendChild(nameWrap);
+
+    var catOpts=PEST_CATEGORY_OPTIONS[entry.category];
+    box.appendChild(renderPestCheckGroup('您怎麼發現／判斷發生？',catOpts.detect,entry.detect,function(vals){ entry.detect=vals; setPestEntries(group,entries); }));
+    box.appendChild(renderPestCheckGroup('用了哪些方法管理？',catOpts.control,entry.control,function(vals){ entry.control=vals; setPestEntries(group,entries); }));
+
+    if(entries.length>1){
+      var delBtn=document.createElement('button'); delBtn.type='button'; delBtn.className='backlink'; delBtn.textContent='移除這一項害物';
+      delBtn.onclick=function(){ entries.splice(idx,1); setPestEntries(group,entries); renderPestSection(group,container); updateProgress(); };
+      box.appendChild(delBtn);
+    }
+    container.appendChild(box);
+  });
+  var addBtn=document.createElement('button'); addBtn.type='button'; addBtn.className='bigbtn secondary'; addBtn.textContent='+ 新增一種病蟲草害';
+  addBtn.onclick=function(){ entries.push({id:'p'+Date.now(),category:'蟲害',name:'',detect:[],control:[]}); setPestEntries(group,entries); renderPestSection(group,container); };
+  container.appendChild(addBtn);
+}
+
 /* ---------- 報名表欄位定義（依第四屆報名表）---------- */
 var COMMON_BASIC = { title:'一、基本資料', fields:[
   {id:'entry_type', label:'報名類別', type:'radio', options:['個人','團體/單位']},
@@ -385,11 +470,7 @@ var FORMS = {
           hint:'請簡述您把IPM方法用在田間的重點與特色（500字內）'}
       ]},
       { title:'四、人力知識（評分佔45分）', fields:[
-        {id:'main_pests', label:'主要病蟲害名稱', type:'text', hint:'可列多項，用頓號分隔，例如：蚜蟲、灰黴病'},
-        {id:'detect_method', label:'您怎麼發現／判斷病蟲害發生？（可複選）', type:'checkbox',
-          options:['定期巡田觀察','黃色或藍色黏紙監測','費洛蒙誘捕器監測','請專家鑑定','其他']},
-        {id:'control_method', label:'用了哪些方法管理？（可複選，勾越多通常代表管理越完整）', type:'checkbox',
-          options:['抗病品種','健康種苗','田間衛生（清除病葉病果）','覆蓋物或套袋','黏紙誘捕','燈光誘引','防蟲網或設施','性費洛蒙','天敵昆蟲','微生物製劑（如蘇力菌）','免登記植物保護資材','化學農藥（必要時）','其他']},
+        {id:'pest_entries', label:'害物與管理方式', type:'pestlist'},
         {id:'safety_gear', label:'用藥或田間作業時的安全防護（可複選）', type:'checkbox',
           options:['口鼻防護具','呼吸防護具','眼部防護具','手套','雨鞋','全套衣','未使用化學農藥','其他']},
         {id:'dosing_principle', label:'用藥原則（若有使用化學農藥，可複選）', type:'checkbox',
@@ -482,7 +563,10 @@ function goForm(group){
   if(form.note){ var n=document.createElement('div'); n.className='info'; n.style.fontSize='16px'; n.textContent='填寫提醒：'+form.note; box.appendChild(n); }
   form.sections.forEach(function(sec){
     var h=document.createElement('div'); h.className='sec-title'; h.textContent=sec.title; box.appendChild(h);
-    sec.fields.forEach(function(f){ box.appendChild(renderField(group,f)); });
+    sec.fields.forEach(function(f){
+      if(f.type==='pestlist'){ var c=document.createElement('div'); box.appendChild(c); renderPestSection(group,c); }
+      else box.appendChild(renderField(group,f));
+    });
   });
   updateProgress();
   document.getElementById('formResultCard').style.display='none';
@@ -535,7 +619,12 @@ function renderField(group,f){
 function allFields(group){ var arr=[]; FORMS[group].sections.forEach(function(s){ s.fields.forEach(function(f){ arr.push(f); }); }); return arr; }
 function updateProgress(){
   var fs=allFields(currentGroup), filled=0;
-  fs.forEach(function(f){ if((lsGet(fkey(currentGroup,f.id))||'').trim()) filled++; });
+  fs.forEach(function(f){
+    if(f.type==='pestlist'){
+      var entries=getPestEntries(currentGroup);
+      if(entries.some(function(e){ return (e.name||'').trim(); })) filled++;
+    } else if((lsGet(fkey(currentGroup,f.id))||'').trim()) filled++;
+  });
   var pct=Math.round(filled/fs.length*100);
   document.getElementById('progText').textContent='已填 '+filled+' / '+fs.length+' 欄（'+pct+'%）';
   document.getElementById('progBar').style.width=pct+'%';
@@ -552,11 +641,24 @@ function makeForm(){
   h+='<h2 style="font-size:18px;">'+form.groupName+'　'+esc(form.formName)+'</h2>';
   h+='<p style="text-align:center;font-size:13px;color:#666;">（本表由「報名小幫手」依第四屆報名表欄位整理，正式投件請對照主辦單位公告的官方表格）</p>';
   form.sections.forEach(function(sec){
-    h+='<h3>'+esc(sec.title)+'</h3><table>';
-    sec.fields.forEach(function(f){
-      h+='<tr><th style="width:38%;">'+esc(f.label)+'</th><td>'+disp(val(g,f.id))+'</td></tr>';
-    });
-    h+='</table>';
+    h+='<h3>'+esc(sec.title)+'</h3>';
+    var hasPestlist=sec.fields.some(function(f){ return f.type==='pestlist'; });
+    if(hasPestlist){
+      var entries=getPestEntries(g);
+      h+='<table><tr><th>類別</th><th>害物名稱</th><th>發現／判斷方式</th><th>管理方法</th></tr>';
+      entries.forEach(function(e){
+        h+='<tr><td>'+esc(e.category)+'</td><td>'+disp(e.name)+'</td><td>'+disp((e.detect||[]).join('|'))+'</td><td>'+disp((e.control||[]).join('|'))+'</td></tr>';
+      });
+      h+='</table>';
+    }
+    var normalFields=sec.fields.filter(function(f){ return f.type!=='pestlist'; });
+    if(normalFields.length){
+      h+='<table>';
+      normalFields.forEach(function(f){
+        h+='<tr><th style="width:38%;">'+esc(f.label)+'</th><td>'+disp(val(g,f.id))+'</td></tr>';
+      });
+      h+='</table>';
+    }
   });
   /* 簽名區：農業親善大使同意書 */
   h+='<h3>農業親善大使同意書（獲獎者須簽署）</h3>';
