@@ -374,39 +374,55 @@ function getPestEntries(group){
   try{ var arr=raw?JSON.parse(raw):[]; return Array.isArray(arr)?arr:[]; }catch(e){ return []; }
 }
 function setPestEntries(group,arr){ lsSet(fkey(group,'pest_entries'), JSON.stringify(arr)); }
-function renderPestCheckGroup(label,options,selectedArr,onChange,otherValue,onOtherChange){
+/* detailTriggers: {選項文字: 填空框的placeholder}。凡在此清單的選項，勾選後會多跳出一個文字框（例如「其他」要說明、「化學農藥」要填藥名） */
+function renderPestCheckGroup(label,options,selectedArr,onChange,detailTriggers,selectedDetails,onDetailChange){
   var wrap=document.createElement('div'); wrap.className='field';
   var lab=document.createElement('label'); lab.className='q'; lab.style.fontSize='16px'; lab.textContent=label; wrap.appendChild(lab);
   var opts=document.createElement('div'); opts.className='opts';
+  selectedDetails=selectedDetails||{};
   options.forEach(function(op){
     var l=document.createElement('label');
     var i=document.createElement('input'); i.type='checkbox'; i.value=op;
     if(selectedArr && selectedArr.indexOf(op)>-1) i.checked=true;
-    var otherInput;
-    if(op==='其他'){
-      otherInput=document.createElement('input'); otherInput.type='text'; otherInput.placeholder='請說明';
-      otherInput.style.cssText='width:150px; margin-left:6px; padding:6px; font-size:16px; border:1px solid var(--line); border-radius:6px; display:'+(i.checked?'inline-block':'none')+';';
-      otherInput.value=otherValue||'';
-      otherInput.oninput=function(){ onOtherChange(otherInput.value.replace(/\|/g,'、')); };
+    var placeholder=detailTriggers && detailTriggers[op];
+    var detailInput;
+    if(placeholder){
+      detailInput=document.createElement('input'); detailInput.type='text'; detailInput.placeholder=placeholder;
+      detailInput.style.cssText='width:230px; margin-left:6px; padding:6px; font-size:16px; border:1px solid var(--line); border-radius:6px; display:'+(i.checked?'inline-block':'none')+';';
+      detailInput.value=selectedDetails[op]||'';
+      detailInput.oninput=function(){ onDetailChange(op, detailInput.value.replace(/\|/g,'、')); };
     }
     i.onchange=function(){
       var chosen=[]; opts.querySelectorAll('input:checked').forEach(function(x){chosen.push(x.value);});
       onChange(chosen);
-      if(otherInput) otherInput.style.display = i.checked ? 'inline-block' : 'none';
+      if(detailInput) detailInput.style.display = i.checked ? 'inline-block' : 'none';
     };
     l.appendChild(i); l.appendChild(document.createTextNode(' '+op)); opts.appendChild(l);
-    if(otherInput) opts.appendChild(otherInput);
+    if(detailInput) opts.appendChild(detailInput);
   });
   wrap.appendChild(opts);
   return wrap;
 }
+var PEST_DETECT_DETAIL_TRIGGERS={'其他':'請說明'};
+var PEST_CONTROL_DETAIL_TRIGGERS={
+  '其他':'請說明',
+  '化學農藥（必要時）':'請填藥劑名稱、使用量或次數等（選填）',
+  '化學除草劑（必要時）':'請填藥劑名稱、使用量或次數等（選填）'
+};
 function renderPestSection(group,container){
   container.innerHTML='';
   var intro=document.createElement('div'); intro.className='info'; intro.style.fontSize='15px';
   intro.textContent='不同害物（病害、蟲害、草害）處理方式不同，請依實際情形逐一新增，選了類別後才會出現對應的方法選項。可新增多筆。';
   container.appendChild(intro);
   var entries=getPestEntries(group);
-  if(entries.length===0){ entries=[{id:'p0',category:'蟲害',name:'',detect:[],control:[],detectOther:'',controlOther:''}]; setPestEntries(group,entries); }
+  if(entries.length===0){ entries=[{id:'p0',category:'蟲害',name:'',detect:[],control:[],detectDetail:{},controlDetail:{}}]; setPestEntries(group,entries); }
+  /* 相容舊版單一「其他」欄位資料，遷移為每選項各自的填空 map */
+  var migrated=false;
+  entries.forEach(function(entry){
+    if(!entry.detectDetail){ entry.detectDetail = entry.detectOther ? {'其他':entry.detectOther} : {}; migrated=true; }
+    if(!entry.controlDetail){ entry.controlDetail = entry.controlOther ? {'其他':entry.controlOther} : {}; migrated=true; }
+  });
+  if(migrated) setPestEntries(group,entries);
   entries.forEach(function(entry,idx){
     var box=document.createElement('div');
     box.style.cssText='border:2px solid #b7d8bb; border-radius:12px; padding:14px; margin:12px 0; background:#fbfffb;';
@@ -418,7 +434,7 @@ function renderPestSection(group,container){
     var catLab=document.createElement('label'); catLab.className='q'; catLab.textContent='這是哪一類？'; catWrap.appendChild(catLab);
     var sel=document.createElement('select');
     ['病害','蟲害','草害','其他'].forEach(function(c){ var o=document.createElement('option'); o.value=c; o.textContent=c; if(entry.category===c) o.selected=true; sel.appendChild(o); });
-    sel.onchange=function(){ entry.category=sel.value; entry.detect=[]; entry.control=[]; entry.detectOther=''; entry.controlOther=''; setPestEntries(group,entries); renderPestSection(group,container); };
+    sel.onchange=function(){ entry.category=sel.value; entry.detect=[]; entry.control=[]; entry.detectDetail={}; entry.controlDetail={}; setPestEntries(group,entries); renderPestSection(group,container); };
     catWrap.appendChild(sel); box.appendChild(catWrap);
 
     var nameWrap=document.createElement('div'); nameWrap.className='field';
@@ -431,10 +447,12 @@ function renderPestSection(group,container){
     var catOpts=PEST_CATEGORY_OPTIONS[entry.category];
     box.appendChild(renderPestCheckGroup('您怎麼發現／判斷發生？',catOpts.detect,entry.detect,
       function(vals){ entry.detect=vals; setPestEntries(group,entries); },
-      entry.detectOther, function(v){ entry.detectOther=v; setPestEntries(group,entries); }));
+      PEST_DETECT_DETAIL_TRIGGERS, entry.detectDetail,
+      function(op,v){ entry.detectDetail[op]=v; setPestEntries(group,entries); }));
     box.appendChild(renderPestCheckGroup('用了哪些方法管理？',catOpts.control,entry.control,
       function(vals){ entry.control=vals; setPestEntries(group,entries); },
-      entry.controlOther, function(v){ entry.controlOther=v; setPestEntries(group,entries); }));
+      PEST_CONTROL_DETAIL_TRIGGERS, entry.controlDetail,
+      function(op,v){ entry.controlDetail[op]=v; setPestEntries(group,entries); }));
 
     if(entries.length>1){
       var delBtn=document.createElement('button'); delBtn.type='button'; delBtn.className='backlink'; delBtn.textContent='移除這一項害物';
@@ -444,7 +462,7 @@ function renderPestSection(group,container){
     container.appendChild(box);
   });
   var addBtn=document.createElement('button'); addBtn.type='button'; addBtn.className='bigbtn secondary'; addBtn.textContent='+ 新增一種病蟲草害';
-  addBtn.onclick=function(){ entries.push({id:'p'+Date.now(),category:'蟲害',name:'',detect:[],control:[],detectOther:'',controlOther:''}); setPestEntries(group,entries); renderPestSection(group,container); };
+  addBtn.onclick=function(){ entries.push({id:'p'+Date.now(),category:'蟲害',name:'',detect:[],control:[],detectDetail:{},controlDetail:{}}); setPestEntries(group,entries); renderPestSection(group,container); };
   container.appendChild(addBtn);
 }
 
@@ -662,6 +680,14 @@ function withOther(arr, otherText){
   otherText=(otherText||'').trim();
   return arr.map(function(v){ return (v==='其他' && otherText) ? '其他（'+otherText+'）' : v; });
 }
+/* 依 detailMap（每個選項各自的補充文字）把陣列裡對應的選項換成「選項（補充文字）」 */
+function withDetails(arr, detailMap){
+  detailMap=detailMap||{};
+  return (arr||[]).map(function(v){
+    var d=(detailMap[v]||'').trim();
+    return d ? v+'（'+d+'）' : v;
+  });
+}
 function checklistDisplay(group,f){
   var raw=val(group,f.id);
   if(!raw) return disp('');
@@ -681,8 +707,8 @@ function makeForm(){
       var entries=getPestEntries(g);
       h+='<table><tr><th>類別</th><th>害物名稱</th><th>發現／判斷方式</th><th>管理方法</th></tr>';
       entries.forEach(function(e){
-        var detectStr=withOther(e.detect||[], e.detectOther).join('|');
-        var controlStr=withOther(e.control||[], e.controlOther).join('|');
+        var detectStr=withDetails(e.detect, e.detectDetail).join('|');
+        var controlStr=withDetails(e.control, e.controlDetail).join('|');
         h+='<tr><td>'+esc(e.category)+'</td><td>'+disp(e.name)+'</td><td>'+disp(detectStr)+'</td><td>'+disp(controlStr)+'</td></tr>';
       });
       h+='</table>';
