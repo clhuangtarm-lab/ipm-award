@@ -374,7 +374,7 @@ function getPestEntries(group){
   try{ var arr=raw?JSON.parse(raw):[]; return Array.isArray(arr)?arr:[]; }catch(e){ return []; }
 }
 function setPestEntries(group,arr){ lsSet(fkey(group,'pest_entries'), JSON.stringify(arr)); }
-function renderPestCheckGroup(label,options,selectedArr,onChange){
+function renderPestCheckGroup(label,options,selectedArr,onChange,otherValue,onOtherChange){
   var wrap=document.createElement('div'); wrap.className='field';
   var lab=document.createElement('label'); lab.className='q'; lab.style.fontSize='16px'; lab.textContent=label; wrap.appendChild(lab);
   var opts=document.createElement('div'); opts.className='opts';
@@ -382,11 +382,20 @@ function renderPestCheckGroup(label,options,selectedArr,onChange){
     var l=document.createElement('label');
     var i=document.createElement('input'); i.type='checkbox'; i.value=op;
     if(selectedArr && selectedArr.indexOf(op)>-1) i.checked=true;
+    var otherInput;
+    if(op==='其他'){
+      otherInput=document.createElement('input'); otherInput.type='text'; otherInput.placeholder='請說明';
+      otherInput.style.cssText='width:150px; margin-left:6px; padding:6px; font-size:16px; border:1px solid var(--line); border-radius:6px; display:'+(i.checked?'inline-block':'none')+';';
+      otherInput.value=otherValue||'';
+      otherInput.oninput=function(){ onOtherChange(otherInput.value.replace(/\|/g,'、')); };
+    }
     i.onchange=function(){
       var chosen=[]; opts.querySelectorAll('input:checked').forEach(function(x){chosen.push(x.value);});
       onChange(chosen);
+      if(otherInput) otherInput.style.display = i.checked ? 'inline-block' : 'none';
     };
     l.appendChild(i); l.appendChild(document.createTextNode(' '+op)); opts.appendChild(l);
+    if(otherInput) opts.appendChild(otherInput);
   });
   wrap.appendChild(opts);
   return wrap;
@@ -397,7 +406,7 @@ function renderPestSection(group,container){
   intro.textContent='不同害物（病害、蟲害、草害）處理方式不同，請依實際情形逐一新增，選了類別後才會出現對應的方法選項。可新增多筆。';
   container.appendChild(intro);
   var entries=getPestEntries(group);
-  if(entries.length===0){ entries=[{id:'p0',category:'蟲害',name:'',detect:[],control:[]}]; setPestEntries(group,entries); }
+  if(entries.length===0){ entries=[{id:'p0',category:'蟲害',name:'',detect:[],control:[],detectOther:'',controlOther:''}]; setPestEntries(group,entries); }
   entries.forEach(function(entry,idx){
     var box=document.createElement('div');
     box.style.cssText='border:2px solid #b7d8bb; border-radius:12px; padding:14px; margin:12px 0; background:#fbfffb;';
@@ -409,7 +418,7 @@ function renderPestSection(group,container){
     var catLab=document.createElement('label'); catLab.className='q'; catLab.textContent='這是哪一類？'; catWrap.appendChild(catLab);
     var sel=document.createElement('select');
     ['病害','蟲害','草害','其他'].forEach(function(c){ var o=document.createElement('option'); o.value=c; o.textContent=c; if(entry.category===c) o.selected=true; sel.appendChild(o); });
-    sel.onchange=function(){ entry.category=sel.value; entry.detect=[]; entry.control=[]; setPestEntries(group,entries); renderPestSection(group,container); };
+    sel.onchange=function(){ entry.category=sel.value; entry.detect=[]; entry.control=[]; entry.detectOther=''; entry.controlOther=''; setPestEntries(group,entries); renderPestSection(group,container); };
     catWrap.appendChild(sel); box.appendChild(catWrap);
 
     var nameWrap=document.createElement('div'); nameWrap.className='field';
@@ -420,8 +429,12 @@ function renderPestSection(group,container){
     nameWrap.appendChild(inp); box.appendChild(nameWrap);
 
     var catOpts=PEST_CATEGORY_OPTIONS[entry.category];
-    box.appendChild(renderPestCheckGroup('您怎麼發現／判斷發生？',catOpts.detect,entry.detect,function(vals){ entry.detect=vals; setPestEntries(group,entries); }));
-    box.appendChild(renderPestCheckGroup('用了哪些方法管理？',catOpts.control,entry.control,function(vals){ entry.control=vals; setPestEntries(group,entries); }));
+    box.appendChild(renderPestCheckGroup('您怎麼發現／判斷發生？',catOpts.detect,entry.detect,
+      function(vals){ entry.detect=vals; setPestEntries(group,entries); },
+      entry.detectOther, function(v){ entry.detectOther=v; setPestEntries(group,entries); }));
+    box.appendChild(renderPestCheckGroup('用了哪些方法管理？',catOpts.control,entry.control,
+      function(vals){ entry.control=vals; setPestEntries(group,entries); },
+      entry.controlOther, function(v){ entry.controlOther=v; setPestEntries(group,entries); }));
 
     if(entries.length>1){
       var delBtn=document.createElement('button'); delBtn.type='button'; delBtn.className='backlink'; delBtn.textContent='移除這一項害物';
@@ -431,7 +444,7 @@ function renderPestSection(group,container){
     container.appendChild(box);
   });
   var addBtn=document.createElement('button'); addBtn.type='button'; addBtn.className='bigbtn secondary'; addBtn.textContent='+ 新增一種病蟲草害';
-  addBtn.onclick=function(){ entries.push({id:'p'+Date.now(),category:'蟲害',name:'',detect:[],control:[]}); setPestEntries(group,entries); renderPestSection(group,container); };
+  addBtn.onclick=function(){ entries.push({id:'p'+Date.now(),category:'蟲害',name:'',detect:[],control:[],detectOther:'',controlOther:''}); setPestEntries(group,entries); renderPestSection(group,container); };
   container.appendChild(addBtn);
 }
 
@@ -593,17 +606,27 @@ function renderField(group,f){
   } else if(f.type==='radio' || f.type==='checkbox'){
     var opts=document.createElement('div'); opts.className='opts';
     var savedArr = saved? saved.split('|') : [];
+    var otherKey=key+'_other';
     f.options.forEach(function(op){
       var l=document.createElement('label');
       var i=document.createElement('input'); i.type=f.type; i.value=op; i.name=key;
       if(savedArr.indexOf(op)>-1) i.checked=true;
+      var otherInput;
+      if(op==='其他'){
+        otherInput=document.createElement('input'); otherInput.type='text'; otherInput.placeholder='請說明';
+        otherInput.style.cssText='width:150px; margin-left:6px; padding:6px; font-size:16px; border:1px solid var(--line); border-radius:6px; display:'+(i.checked?'inline-block':'none')+';';
+        otherInput.value=lsGet(otherKey)||'';
+        otherInput.oninput=function(){ lsSet(otherKey, otherInput.value.replace(/\|/g,'、')); };
+      }
       i.onchange=function(){
         var chosen;
         if(f.type==='radio'){ chosen=[op]; }
         else { chosen=[]; opts.querySelectorAll('input:checked').forEach(function(x){chosen.push(x.value);}); }
         lsSet(key, chosen.join('|')); updateProgress();
+        if(otherInput) otherInput.style.display = i.checked ? 'inline-block' : 'none';
       };
       l.appendChild(i); l.appendChild(document.createTextNode(' '+op)); opts.appendChild(l);
+      if(otherInput) opts.appendChild(otherInput);
     });
     wrap.appendChild(opts);
   } else if(f.type==='select'){
@@ -634,6 +657,17 @@ function updateProgress(){
 function esc(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 function val(group,fid){ return (lsGet(fkey(group,fid))||'').trim(); }
 function disp(v){ return v? '<span class="val">'+esc(v).replace(/\|/g,'、')+'</span>' : '<span class="blank">（未填）</span>'; }
+/* 把勾選陣列裡的「其他」換成「其他（補充文字）」再顯示 */
+function withOther(arr, otherText){
+  otherText=(otherText||'').trim();
+  return arr.map(function(v){ return (v==='其他' && otherText) ? '其他（'+otherText+'）' : v; });
+}
+function checklistDisplay(group,f){
+  var raw=val(group,f.id);
+  if(!raw) return disp('');
+  var otherText=(lsGet(fkey(group,f.id+'_other'))||'').trim();
+  return disp(withOther(raw.split('|'), otherText).join('|'));
+}
 
 function makeForm(){
   var g=currentGroup, form=FORMS[g], h='';
@@ -647,7 +681,9 @@ function makeForm(){
       var entries=getPestEntries(g);
       h+='<table><tr><th>類別</th><th>害物名稱</th><th>發現／判斷方式</th><th>管理方法</th></tr>';
       entries.forEach(function(e){
-        h+='<tr><td>'+esc(e.category)+'</td><td>'+disp(e.name)+'</td><td>'+disp((e.detect||[]).join('|'))+'</td><td>'+disp((e.control||[]).join('|'))+'</td></tr>';
+        var detectStr=withOther(e.detect||[], e.detectOther).join('|');
+        var controlStr=withOther(e.control||[], e.controlOther).join('|');
+        h+='<tr><td>'+esc(e.category)+'</td><td>'+disp(e.name)+'</td><td>'+disp(detectStr)+'</td><td>'+disp(controlStr)+'</td></tr>';
       });
       h+='</table>';
     }
@@ -655,7 +691,8 @@ function makeForm(){
     if(normalFields.length){
       h+='<table>';
       normalFields.forEach(function(f){
-        h+='<tr><th style="width:38%;">'+esc(f.label)+'</th><td>'+disp(val(g,f.id))+'</td></tr>';
+        var dv=(f.type==='checkbox'||f.type==='radio') ? checklistDisplay(g,f) : disp(val(g,f.id));
+        h+='<tr><th style="width:38%;">'+esc(f.label)+'</th><td>'+dv+'</td></tr>';
       });
       h+='</table>';
     }
