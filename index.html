@@ -369,7 +369,7 @@ var FORMS = {
     sections:[
       COMMON_BASIC,
       { title:'二、參賽作物相關資料', fields:[
-        {id:'crop_class', label:'參賽作物分類', type:'radio', options:['稻米','果樹','蔬菜','雜糧及特作','其他']},
+        {id:'crop_class', label:'參賽作物分類（可複選）', type:'checkbox', options:['稻米','果樹','蔬菜','雜糧及特作','其他']},
         {id:'crop_name', label:'參賽作物別', type:'text'},
         {id:'crop_region', label:'參賽作物耕作地區', type:'text'},
         {id:'land_no', label:'參賽作物田區地號（縣市、鄉鎮、地段、地號）', type:'textarea'},
@@ -380,15 +380,46 @@ var FORMS = {
         {id:'harvest', label:'採收月份（例：3月至6月）', type:'text'},
         {id:'cert', label:'已獲得之認證（需附佐證資料）', type:'checkbox', options:['有機','有機轉型期','產銷履歷升級版TGAP PLUS','產銷履歷','其他','無']}
       ]},
-      { title:'三、IPM執行成果', fields:[
+      { title:'三、IPM執行成果概述', fields:[
         {id:'summary', label:'IPM執行成果概述', type:'textarea', maxlen:500,
-          hint:'請簡述您把IPM方法用在田間的重點與特色（500字內）'},
-        {id:'pest_ipm', label:'田裡主要病蟲害有哪些？各用了哪些方法管理？', type:'textarea',
-          hint:'對應「人力知識」評分。請具體寫：害物名稱、您怎麼發現/判斷、用了哪些做法（耐病品種、田間衛生、黏紙、費洛蒙、天敵、微生物製劑、免登資材，必要時才安全用藥）'},
-        {id:'econ', label:'防治紀錄與經濟效益', type:'textarea',
-          hint:'對應「經濟效益」。有沒有留防治／生產紀錄？改用IPM後，農藥成本、產量、售價的變化'},
-        {id:'env', label:'環境效益', type:'textarea',
-          hint:'對應「環境效益」。化學農藥減量情形，以及對天敵、水質、土壤友善的作法'}
+          hint:'請簡述您把IPM方法用在田間的重點與特色（500字內）'}
+      ]},
+      { title:'四、人力知識（評分佔45分）', fields:[
+        {id:'main_pests', label:'主要病蟲害名稱', type:'text', hint:'可列多項，用頓號分隔，例如：蚜蟲、灰黴病'},
+        {id:'detect_method', label:'您怎麼發現／判斷病蟲害發生？（可複選）', type:'checkbox',
+          options:['定期巡田觀察','黃色或藍色黏紙監測','費洛蒙誘捕器監測','請專家鑑定','其他']},
+        {id:'control_method', label:'用了哪些方法管理？（可複選，勾越多通常代表管理越完整）', type:'checkbox',
+          options:['抗病品種','健康種苗','田間衛生（清除病葉病果）','覆蓋物或套袋','黏紙誘捕','燈光誘引','防蟲網或設施','性費洛蒙','天敵昆蟲','微生物製劑（如蘇力菌）','免登記植物保護資材','化學農藥（必要時）','其他']},
+        {id:'safety_gear', label:'用藥或田間作業時的安全防護（可複選）', type:'checkbox',
+          options:['口鼻防護具','呼吸防護具','眼部防護具','手套','雨鞋','全套衣','未使用化學農藥','其他']},
+        {id:'dosing_principle', label:'用藥原則（若有使用化學農藥，可複選）', type:'checkbox',
+          options:['選用已登記藥劑','依標籤指示使用','選擇低毒性藥劑','遵守安全採收期','單劑輪流使用避免抗藥性','其他','未使用化學農藥']},
+        {id:'knowledge_detail', label:'想再補充說明（選填）', type:'textarea',
+          hint:'例如：發生時期、田間觀察到的細節、其他做法。上面勾選不夠寫的都可以補在這裡'}
+      ]},
+      { title:'五、社群組織（評分佔10分）', fields:[
+        {id:'info_source', label:'您從哪些管道學習IPM知識？（可複選）', type:'checkbox',
+          options:['農改場或試驗所','農會課程','產銷班交流','書籍或手冊','網路社群','講習會或研討會','其他']},
+        {id:'org_join', label:'您有沒有參加這些組織？（可複選）', type:'checkbox',
+          options:['產銷班','合作社','農民團體','其他','無']},
+        {id:'share_activity', label:'有沒有做這些事？（可複選）', type:'checkbox',
+          options:['參加講習會或研討會','與試驗改良場所合作（如設置試驗田、示範觀摩）','在網路社群分享經驗','教其他農友','其他','無']}
+      ]},
+      { title:'六、經濟效益（評分佔15分）', fields:[
+        {id:'econ_records', label:'您有留哪些紀錄？（可複選）', type:'checkbox',
+          options:['施藥紀錄（藥劑種類、用量、時間）','成本紀錄','收益紀錄','病蟲害損失紀錄','其他','無']},
+        {id:'econ_benefit', label:'改用IPM後，有沒有這些改變？（可複選）', type:'checkbox',
+          options:['農藥成本降低','產量提升','售價提升','用藥次數減少','其他','尚未看到明顯改變']},
+        {id:'econ_numbers', label:'具體數字（選填，越具體越好）', type:'textarea',
+          hint:'例如：農藥成本從每月X元降到Y元、用藥次數從N次降到M次'}
+      ]},
+      { title:'七、環境效益（評分佔30分）', fields:[
+        {id:'env_friendly', label:'有沒有做這些友善環境的作法？（可複選）', type:'checkbox',
+          options:['保留草生或天敵棲地','避免影響授粉昆蟲','減少對水質或土壤的影響','藥液飄散防範（如避開強風時段）','妥善處理廢棄物及廢容器','其他']},
+        {id:'env_reduction', label:'化學農藥減量情形（可複選）', type:'checkbox',
+          options:['用藥次數減少','用藥種類減少','改用免登記資材或生物製劑替代','完全不使用化學農藥','尚未減少']},
+        {id:'env_numbers', label:'具體數字（選填，越具體越好）', type:'textarea',
+          hint:'例如：化學農藥用量減少約N公斤、用藥次數從X次降到Y次'}
       ]}
     ]},
   tech:{ groupName:'技術創新組', formName:'作物有害生物整合管理技術成果資料表（附件3）',
