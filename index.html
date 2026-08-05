@@ -125,7 +125,7 @@
     填寫內容只會存在您自己的手機或電腦，<b>不會上傳</b>，可以放心填。
   </div>
   <div class="warn">
-    本工具依「第五屆永續善農獎評選辦法（公告版）」整理，報名表欄位參考第四屆報名表格式設計。
+    本工具依「第五屆永續善農獎評選辦法（公告版）」整理。
     正式投件請以官方公告的附件表格內容為準，本工具的分組建議與草稿僅供輔助準備。
   </div>
   <a class="bigbtn secondary" href="https://ipm-award.mystrikingly.com/" target="_blank" rel="noopener"
@@ -178,6 +178,12 @@
   </div>
   <div class="card no-print">
     <div class="result-title" id="formTitle"></div>
+    <h3 style="margin-top:0;">第一步：佐證資料與頁數規劃</h3>
+    <p class="hint">先想想要附哪些佐證資料，抓一下大概頁數，避免整份資料（含附件）超過50頁。</p>
+    <div id="pageBudgetBox"></div>
+  </div>
+  <div class="card no-print">
+    <h3 style="margin-top:0;">第二步：填寫內容</h3>
     <div class="info" style="font-size:16px;">用平常說話的方式填就好，不會的欄位可以先留白，之後再補。填好按最下面「產生報名表」，就會排好一份可以列印、投件的報名表。內容會自動存在這台裝置，下次打開繼續填。</div>
     <div id="formFields"></div>
     <button class="bigbtn" onclick="makeForm()">產生報名表</button>
@@ -232,7 +238,7 @@
 </main>
 
 <footer>
-  本工具內容依「第五屆永續善農獎IPM Award選拔表揚計畫」評選辦法（公告版）整理，報名表欄位參考第四屆報名表格式，
+  本工具內容依「第五屆永續善農獎IPM Award選拔表揚計畫」評選辦法（公告版）整理，
   正式投件請以官方附件表格為準。填寫內容只儲存在您自己的裝置，不會上傳。
 </footer>
 
@@ -467,7 +473,7 @@ function renderPestSection(group,container){
   container.appendChild(addBtn);
 }
 
-/* ---------- 報名表欄位定義（依第四屆報名表）---------- */
+/* ---------- 報名表欄位定義（依第五屆評選辦法公告版附件2/3/4-1）---------- */
 var COMMON_BASIC = { title:'一、基本資料', fields:[
   {id:'entry_type', label:'報名類別', type:'radio', options:['個人','團體/單位']},
   {id:'name', label:'姓名（個人報名）／團體單位名稱（團體報名）', type:'text'},
@@ -499,7 +505,7 @@ var FORMS = {
       ]},
       { title:'三、IPM執行成果概述', fields:[
         {id:'summary', label:'IPM執行成果概述', type:'textarea', maxlen:500,
-          hint:'請簡述您把IPM方法用在田間的重點與特色（500字內）'}
+          hint:'請簡述您把IPM方法用在田間的重點與特色（500字內），並摘要說明主要量化成果，例如化學農藥使用風險減量、防治成本變化、產量或品質改善、示範推廣情形等'}
       ]},
       { title:'四、人力知識（評分佔45分）', fields:[
         {id:'pest_entries', label:'害物與管理方式', type:'pestlist'},
@@ -519,8 +525,9 @@ var FORMS = {
           options:['農改場或試驗所','農會課程','產銷班交流','書籍或手冊','網路社群','講習會或研討會','其他']},
         {id:'org_join', label:'您有沒有參加這些組織？（可複選）', type:'checkbox',
           options:['產銷班','合作社','農民團體','其他','無']},
-        {id:'share_activity', label:'有沒有做這些事？（可複選）', type:'checkbox',
-          options:['參加講習會或研討會','與試驗改良場所合作（如設置試驗田、示範觀摩）','在網路社群分享經驗','教其他農友','其他','無']}
+        {id:'share_activity', label:'技術擴散：有沒有做這些事？（可複選）', type:'checkbox',
+          hint:'把您的做法教給別人、擴散出去，是社群組織的加分重點',
+          options:['參加講習會或研討會','與試驗改良場所合作（如設置試驗田、示範觀摩）','主動向周邊農民分享，推廣正確IPM觀念與技術','與其他農民建立共同監測或區域共同防治機制','辦理或協助推動田間示範觀摩會、講習會','利用LINE等社群工具解答鄰近農友諮詢','其他','無']}
       ]},
       { title:'六、經濟效益（評分佔15分）', fields:[
         {id:'econ_records', label:'您有留哪些紀錄？（可複選）', type:'checkbox',
@@ -548,45 +555,153 @@ var FORMS = {
         {id:'tech_type', label:'技術類型（可複選）', type:'checkbox', options:['新技術','新資材','新應用策略','其他']},
         {id:'trl', label:'技術成熟度階段', type:'select', options:['TRL1-4（可行性驗證）','TRL5（實驗室驗證原型）','TRL6（實際環境驗證）','TRL7（示範/成本評估）','TRL8（商業化/技轉少量使用）','TRL9（持續生產普及）']},
         {id:'summary', label:'成果摘要', type:'textarea', maxlen:500, hint:'本技術解決的問題、執行重點與成果（約500字）'},
-        {id:'innovation', label:'創新性', type:'textarea', maxlen:1000, hint:'與既有技術的差異、如何整合到田間管理、提升防治效能的比率'},
+        {id:'innovation', label:'創新性', type:'textarea', maxlen:1000, hint:'與既有技術的差異、如何整合到田間管理、提升防治效能的比率。請盡量檢附科學實證數據佐證（如實驗室數據、對照組田間試驗數據）'},
         {id:'community', label:'社群組織', type:'textarea', maxlen:1000, hint:'出版、發表、推廣、獲獎，以及跨單位協作情形'},
-        {id:'econ', label:'產業應用及經濟效益', type:'textarea', maxlen:1000, hint:'技術導入應用程度、創造的產業價值、使用者收益增加（如降低多少田間管理成本）'},
-        {id:'env', label:'對環境永續之效益與影響', type:'textarea', maxlen:1000, hint:'農藥風險減量、替代高毒性高風險農藥、對淨零碳排的貢獻'},
-        {id:'case', label:'應用案例', type:'textarea', maxlen:1000, hint:'至少一項實際應用：應用者、概況、應用多久、場域及規模、成效、應用者聯絡資訊'},
+        {id:'econ', label:'產業應用及經濟效益', type:'textarea', maxlen:1000, hint:'技術導入應用程度、創造的產業價值、使用者收益增加（如降低多少比例田間管理成本，請以具體數字說明）'},
+        {id:'env', label:'對環境永續之效益與影響', type:'textarea', maxlen:1000, hint:'農藥風險減量、替代高毒性高風險農藥、對淨零碳排的貢獻。請說明您怎麼估算這些效益（方法論），並附量化數據'},
+        {id:'case', label:'應用案例', type:'textarea', maxlen:1000, hint:'至少一項實際應用：應用者、概況、應用多久、場域及規模、成效、應用者聯絡資訊。第2階段實地審查原則須提供3至5處應用場域及聯絡資訊；若僅單一場域，請說明原因及代表性'},
         {id:'fund_amount', label:'投入研發與推廣經費約（元）', type:'text'},
-        {id:'fund_public', label:'其中來自公部門的比例（%）', type:'text'}
+        {id:'fund_public', label:'其中來自公部門的比例（%）', type:'text'},
+        {id:'fund_method', label:'經費估算方式（選填）', type:'textarea', hint:'例如：OO萬元經費中包含哪些項目（人事、材料、設備等）'}
       ]}
     ]},
-  promo:{ groupName:'行銷推廣組', formName:'作物有害生物整合管理行銷推廣成果資料表（附件4）',
+  promo:{ groupName:'行銷推廣組', formName:'作物有害生物整合管理行銷推廣成果資料表（附件4-1）',
     note:'各欄請簡明扼要（1000字內），並明確標示與IPM的關連性。',
     sections:[
       COMMON_BASIC,
       { title:'二、行銷推廣成果簡介', fields:[
         {id:'intro', label:'參賽者簡介', type:'textarea', maxlen:500, hint:'主要業務項目，及與IPM行銷推廣的關連性（500字內）'},
         {id:'strategy', label:'主要推廣策略（至多3項）', type:'checkbox', options:['輔導培訓課程','田間現場示範','擔任輔導顧問','出版推廣文宣品','採購IPM農產品','行銷推廣IPM農產品','其他']},
-        {id:'summary', label:'成果摘要', type:'textarea', maxlen:1000, hint:'主要推廣策略、目標對象、成果及效益'},
-        {id:'knowledge', label:'人力知識', type:'textarea', maxlen:1000, hint:'對IPM的認知、知識從哪來、辦過的推廣活動、是否聘用植醫協助'},
-        {id:'social', label:'社會效益', type:'textarea', maxlen:1000, hint:'用哪些推廣方式（講習、文宣、網站、展覽、食農教育），對農友/通路/消費者認知與行為的改變（附案例、問卷數據）'},
-        {id:'econ', label:'經濟效益', type:'textarea', maxlen:1000, hint:'協助建立品牌、擴大通路、提升品質售價；採購或推廣IPM農產品的規模與成效'},
-        {id:'env', label:'對環境永續之效益與影響', type:'textarea', maxlen:1000, hint:'協作農友達成多少化學農藥減量、擴大多少IPM面積、生物友善環境'},
+        {id:'summary', label:'成果摘要', type:'textarea', maxlen:1000, hint:'主要推廣策略、目標對象、成果及效益。請盡量以量化數據或具體案例說明推廣後對認知、認同及行為改變的影響'},
+        {id:'knowledge', label:'人力知識', type:'textarea', maxlen:1000, hint:'對IPM的認知、知識從哪來、辦過的推廣活動、是否聘用植物診療師協助'},
+        {id:'social', label:'社會效益', type:'textarea', maxlen:1000, hint:'用哪些推廣方式（講習、文宣、網站、展覽、食農教育），對農友/通路/消費者認知與行為的改變（附案例、問卷調查數據，問卷範例可參考附件4-2）'},
+        {id:'econ', label:'經濟效益', type:'textarea', maxlen:1000, hint:'協助建立品牌、擴大通路、提升品質售價；採購或推廣IPM農產品的規模與成效，請盡量附具體數字'},
+        {id:'env', label:'對環境永續之效益與影響', type:'textarea', maxlen:1000, hint:'協作農友達成多少比例化學農藥減量、擴大多少IPM應用面積、生物友善環境等，請盡量以量化數據呈現'},
         {id:'case', label:'應用案例', type:'textarea', maxlen:1000, hint:'至少一項實際行銷推廣案例：目標對象、推廣情形、推廣成效'},
-        {id:'fund_amount', label:'近2年投入IPM行銷推廣經費約（元）', type:'text'},
+        {id:'fund_amount', label:'近2年平均每年投入IPM行銷推廣經費約（元）', type:'text'},
         {id:'fund_public', label:'其中來自公部門的比例（%）', type:'text'},
+        {id:'fund_method', label:'經費估算方式（選填）', type:'textarea', hint:'例如：OO萬元經費中包含哪些項目'},
         {id:'plan', label:'得獎後IPM行銷推廣活動規劃', type:'textarea', hint:'得獎者須於獲獎後2年內辦理至少2場次IPM行銷推廣活動，請概述規劃'}
       ]}
     ]}
 };
 
-/* 各組必附文件（產生報名表時列於文末）*/
-var REQUIRED_DOCS = {
-  field:['基本報名表（本表）','農業親善大使同意書、報名資料聲明（附件5）〔需簽名／用印〕',
-    '作物有害生物整合管理方法項目表（附件2）及佐證資料〔田間照片、施藥紀錄、資材購買紀錄等〕',
-    '最近1年化學農藥殘留檢驗紀錄與結果，或有機／有機轉型期／綠色保育標章證書'],
-  tech:['基本報名表（本表）','農業親善大使同意書、報名資料聲明（附件5）〔需簽名／用印〕',
-    '作物有害生物整合管理技術成果資料表（附件3）及佐證資料〔研究報告、專利、技轉、應用報告等〕'],
-  promo:['基本報名表（本表）','農業親善大使同意書、報名資料聲明（附件5）〔需簽名／用印〕',
-    '作物有害生物整合管理行銷推廣成果資料表（附件4-1）及佐證資料〔活動成果、文宣、採購證明等〕']
+/* 各組應繳文件與參考佐證資料，附估計頁數（供「佐證資料與頁數規劃」使用；產生報名表時也列於文末）
+   defaultPages 是本工具建議的估計值，不是官方規定頁數，使用者可自行調整 */
+var DOC_ITEMS = {
+  field:{
+    baseline:{id:'baseline', label:'本文：基本報名表＋附件2內容（含四大面向勾選與說明）', defaultPages:6},
+    required:[
+      {id:'form5', label:'農業親善大使同意書、報名資料聲明（附件5）', note:'需簽名／用印', defaultPages:2},
+      {id:'evidence2', label:'附件2佐證資料', note:'田間照片、施藥紀錄、資材購買紀錄、教育訓練證書等', defaultPages:5},
+      {id:'pesticide_test', label:'最近1年化學農藥殘留檢驗紀錄與結果，或有機／有機轉型期／綠色保育標章證書', defaultPages:2}
+    ],
+    reference:[
+      {id:'cert3rd', label:'第三方驗證標章認證文件（產銷履歷升級版TGAP PLUS、產銷履歷、有機、綠色保育等）', defaultPages:1},
+      {id:'recommend', label:'推薦函（附件9）', defaultPages:1},
+      {id:'other', label:'其他有利佐證資料', defaultPages:2}
+    ]
+  },
+  tech:{
+    baseline:{id:'baseline', label:'本文：基本報名表＋附件3內容', defaultPages:5},
+    required:[
+      {id:'form5', label:'農業親善大使同意書、報名資料聲明（附件5）', note:'需簽名／用印', defaultPages:2},
+      {id:'evidence3', label:'附件3相關佐證資料', defaultPages:5}
+    ],
+    reference:[
+      {id:'research5y', label:'過去5年相關研發成果（研究報告、出版品等，3件以內）', defaultPages:6},
+      {id:'awards', label:'得獎證明、專利證明、技轉資料、產業應用情形報告', defaultPages:3},
+      {id:'recommend', label:'推薦函（附件9）', defaultPages:1},
+      {id:'other', label:'其他有利佐證資料', defaultPages:2}
+    ]
+  },
+  promo:{
+    baseline:{id:'baseline', label:'本文：基本報名表＋附件4-1內容', defaultPages:5},
+    required:[
+      {id:'form5', label:'農業親善大使同意書、報名資料聲明（附件5）', note:'需簽名／用印', defaultPages:2},
+      {id:'evidence4', label:'附件4-1相關佐證資料', defaultPages:5}
+    ],
+    reference:[
+      {id:'activity2y', label:'過去2年推廣活動成果佐證（活動、課程、田間示範、文宣等，5件以內）', defaultPages:8},
+      {id:'purchase', label:'過去2年採購或行銷IPM農產品之證明文件', defaultPages:2},
+      {id:'recommend', label:'推薦函（附件9）', defaultPages:1},
+      {id:'other', label:'其他得獎證明文件等有利佐證資料', defaultPages:2}
+    ]
+  }
 };
+var PAGE_LIMIT=50;
+function pbKey(group,kind,id){ return fkey(group,'pb_'+kind+'_'+id); }
+function pbGetPages(group,kind,item){
+  var k=pbKey(group,kind,item.id), v=lsGet(k);
+  if(v===null || v===''){ v=String(item.defaultPages); lsSet(k,v); }
+  var n=parseFloat(v); return isNaN(n)?0:n;
+}
+function pbGetInclude(group,item){
+  return lsGet(pbKey(group,'inc',item.id))==='1';
+}
+function renderPageBudget(group,container){
+  container.innerHTML='';
+  var d=DOC_ITEMS[group];
+  var intro=document.createElement('div'); intro.className='info'; intro.style.fontSize='15px';
+  intro.textContent='下面的頁數是本工具給的估計值，方便您抓總頁數，不是官方規定的頁數，請依實際排版調整。評選辦法規定：報名資料以50頁為限（含佐證附件）。';
+  container.appendChild(intro);
+
+  function numberRow(label,note,kind,item,alwaysCounted){
+    var row=document.createElement('div'); row.style.cssText='display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin:10px 0; padding:8px 10px; background:#fafafa; border:1px solid var(--line); border-radius:8px;';
+    var chk;
+    if(!alwaysCounted){
+      chk=document.createElement('input'); chk.type='checkbox'; chk.style.cssText='width:24px;height:24px;flex:none;';
+      chk.checked=pbGetInclude(group,item);
+      chk.onchange=function(){ lsSet(pbKey(group,'inc',item.id), chk.checked?'1':'0'); updatePageBudgetTotal(group); };
+      row.appendChild(chk);
+    }
+    var lab=document.createElement('span'); lab.style.cssText='flex:1; min-width:180px; font-size:17px;';
+    lab.textContent=label+(note?'（'+note+'）':'');
+    row.appendChild(lab);
+    var numWrap=document.createElement('span'); numWrap.style.cssText='display:flex; align-items:center; gap:4px; flex:none;';
+    var num=document.createElement('input'); num.type='number'; num.min='0'; num.step='1';
+    num.value=pbGetPages(group,kind,item);
+    num.style.cssText='width:64px; padding:6px; font-size:17px; border:1px solid var(--line); border-radius:6px;';
+    num.oninput=function(){ lsSet(pbKey(group,kind,item.id), num.value); updatePageBudgetTotal(group); };
+    numWrap.appendChild(num);
+    var unit=document.createElement('span'); unit.textContent='頁'; numWrap.appendChild(unit);
+    row.appendChild(numWrap);
+    return row;
+  }
+
+  container.appendChild(numberRow(d.baseline.label,null,'baseline',d.baseline,true));
+
+  var reqTitle=document.createElement('div'); reqTitle.style.cssText='font-weight:bold; margin-top:14px; color:var(--green-dark);';
+  reqTitle.textContent='必要文件（一定要附，頁數請依實際份量調整）';
+  container.appendChild(reqTitle);
+  d.required.forEach(function(item){ container.appendChild(numberRow(item.label,item.note,'req',item,true)); });
+
+  var refTitle=document.createElement('div'); refTitle.style.cssText='font-weight:bold; margin-top:14px; color:var(--blue);';
+  refTitle.textContent='參考資料（非必繳，勾選「打算附上」才會計入頁數）';
+  container.appendChild(refTitle);
+  d.reference.forEach(function(item){ container.appendChild(numberRow(item.label,null,'ref',item,false)); });
+
+  var totalBox=document.createElement('div'); totalBox.id='pbTotalBox';
+  totalBox.style.cssText='margin-top:16px; padding:14px; border-radius:10px; font-size:20px; font-weight:bold; text-align:center;';
+  container.appendChild(totalBox);
+  updatePageBudgetTotal(group);
+}
+function computePageBudgetTotal(group){
+  var d=DOC_ITEMS[group];
+  var total=pbGetPages(group,'baseline',d.baseline);
+  d.required.forEach(function(item){ total+=pbGetPages(group,'req',item); });
+  d.reference.forEach(function(item){ if(pbGetInclude(group,item)) total+=pbGetPages(group,'ref',item); });
+  return total;
+}
+function updatePageBudgetTotal(group){
+  var box=document.getElementById('pbTotalBox'); if(!box) return;
+  var total=computePageBudgetTotal(group);
+  var msg='預估總頁數：'+total+' / '+PAGE_LIMIT+' 頁';
+  if(total>PAGE_LIMIT){ box.style.background='#ffebee'; box.style.color='#c62828'; msg+='　已超過上限，請刪減內容或佐證資料'; }
+  else if(total>=PAGE_LIMIT-5){ box.style.background='#fff3e0'; box.style.color='#e65100'; msg+='　接近上限，請留意'; }
+  else { box.style.background='#e8f5e9'; box.style.color='#1b5e20'; }
+  box.textContent=msg;
+}
 
 /* ---------- 產生填寫表單 ---------- */
 function fkey(g,fid){ return 'ipmf_'+g+'_'+fid; }
@@ -595,6 +710,7 @@ function goForm(group){
   currentGroup=group;
   var form=FORMS[group];
   document.getElementById('formTitle').textContent=form.groupName+'：'+form.formName;
+  renderPageBudget(group, document.getElementById('pageBudgetBox'));
   var box=document.getElementById('formFields'); box.innerHTML='';
   if(form.note){ var n=document.createElement('div'); n.className='info'; n.style.fontSize='16px'; n.textContent='填寫提醒：'+form.note; box.appendChild(n); }
   form.sections.forEach(function(sec){
@@ -704,7 +820,7 @@ function makeForm(){
   var g=currentGroup, form=FORMS[g], h='';
   h+='<h2>第五屆永續善農獎 IPM Award 報名表</h2>';
   h+='<h2 style="font-size:18px;">'+form.groupName+'　'+esc(form.formName)+'</h2>';
-  h+='<p style="text-align:center;font-size:13px;color:#666;">（本表由「報名小幫手」依第四屆報名表欄位整理，正式投件請對照主辦單位公告的官方表格）</p>';
+  h+='<p style="text-align:center;font-size:13px;color:#666;">（本表由「報名小幫手」依第五屆評選辦法公告版整理，正式投件請對照主辦單位公告的官方附件表格）</p>';
   form.sections.forEach(function(sec){
     h+='<h3>'+esc(sec.title)+'</h3>';
     var hasPestlist=sec.fields.some(function(f){ return f.type==='pestlist'; });
@@ -733,11 +849,20 @@ function makeForm(){
   h+='<div class="sign">本人（團隊／單位）同意於頒獎典禮後2年內，擔任農業部之農業親善大使，配合2場次以上示範觀摩會，協助推動IPM之操作與應用。<br><br>'+
      '立同意書人：＿＿＿＿＿＿＿＿＿（簽章）　身分證字號／統一編號：＿＿＿＿＿＿＿＿＿<br><br>'+
      '住址／公司地址：＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿　中華民國　＿＿　年　＿＿　月　＿＿　日</div>';
-  /* 必附文件 */
+  /* 必附文件與參考資料檢核 */
+  var d=DOC_ITEMS[g];
   h+='<h3>應繳與佐證文件檢核</h3><ul>';
-  REQUIRED_DOCS[g].forEach(function(d){ h+='<li>☐ '+esc(d)+'</li>'; });
-  h+='<li>☐ （選填）推薦函（附件9）、第三方驗證標章、得獎／專利等有利佐證</li></ul>';
-  h+='<p style="font-size:13px;color:#666;">提醒：報名資料以50頁為限（含佐證附件），A4、本文12級字以上。若使用AI生成文字或請專家協助撰寫，請於報名資料聲明（附件5-2）主動標示。本表為輔助草稿，正式投件請以官方公告的附件表格為準。</p>';
+  h+='<li>☐ 基本報名表（本表）</li>';
+  d.required.forEach(function(item){ h+='<li>☐ '+esc(item.label)+(item.note?'（'+esc(item.note)+'）':'')+'</li>'; });
+  d.reference.forEach(function(item){
+    var included=pbGetInclude(g,item);
+    h+='<li>'+(included?'☑':'☐')+' （參考資料）'+esc(item.label)+'</li>';
+  });
+  h+='</ul>';
+  var pbTotal=computePageBudgetTotal(g);
+  var pbColor = pbTotal>PAGE_LIMIT ? '#c62828' : (pbTotal>=PAGE_LIMIT-5 ? '#e65100' : '#1b5e20');
+  h+='<p style="font-size:15px;"><b>您規劃的預估總頁數：<span style="color:'+pbColor+';">'+pbTotal+' / '+PAGE_LIMIT+' 頁</span></b>（依「佐證資料與頁數規劃」步驟填寫，僅供參考，實際頁數依您排版後的官方附件為準）</p>';
+  h+='<p style="font-size:13px;color:#666;">提醒：報名資料以50頁為限（含佐證附件），A4、本文12級字以上，表格圖說不小於10級字，不得以縮小字級、壓縮行距或文字轉圖片等方式規避頁數限制。若使用AI生成文字或請專家協助撰寫，請於報名資料聲明（附件5-2）主動標示。本表為輔助草稿，正式投件請以官方公告的附件表格為準。</p>';
   document.getElementById('formOutput').innerHTML=h;
   document.getElementById('formResultCard').style.display='block';
   document.getElementById('formResultCard').scrollIntoView({behavior:'smooth'});
