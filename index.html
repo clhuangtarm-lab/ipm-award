@@ -468,6 +468,7 @@ function renderPestSection(group,container){
       function(vals){ entry.control=vals; setPestEntries(group,entries); },
       PEST_CONTROL_DETAIL_TRIGGERS, entry.controlDetail,
       function(op,v){ entry.controlDetail[op]=v; setPestEntries(group,entries); }));
+    box.appendChild(renderEvidenceWidget(group,'pest_'+entry.id,'田間監測照片（標註日期，呈現病蟲害密度變化）、施藥或防治紀錄、防治藥劑名稱與用量'));
 
     if(entries.length>1){
       var delBtn=document.createElement('button'); delBtn.type='button'; delBtn.className='backlink'; delBtn.textContent='移除這一項害物';
@@ -503,7 +504,7 @@ var FORMS = {
         {id:'crop_class', label:'參賽作物分類（可複選）', type:'checkbox', options:['稻米','果樹','蔬菜','雜糧及特作','其他']},
         {id:'crop_name', label:'參賽作物別', type:'text'},
         {id:'crop_region', label:'參賽作物耕作地區', type:'text'},
-        {id:'land_no', label:'參賽作物田區地號（縣市、鄉鎮、地段、地號）', type:'textarea'},
+        {id:'land_no', label:'參賽作物田區地號（縣市、鄉鎮、地段、地號）', type:'textarea', noEvidence:true},
         {id:'total_area', label:'參賽作物總面積（公頃）', type:'text'},
         {id:'ipm_area', label:'IPM操作面積（公頃）', type:'text', hint:'IPM操作田區面積至少需為總面積的20%'},
         {id:'yield', label:'每期單位面積產量', type:'text', hint:'例：每年2期，每期鮮重3000公斤/公頃'},
@@ -512,8 +513,8 @@ var FORMS = {
         {id:'cert', label:'已獲得之認證（需附佐證資料）', type:'checkbox', options:['有機','有機轉型期','產銷履歷升級版TGAP PLUS','產銷履歷','其他','無']}
       ]},
       { title:'三、IPM執行成果概述', fields:[
-        {id:'summary', label:'IPM執行成果概述', type:'textarea', maxlen:500,
-          hint:'請簡述您把IPM方法用在田間的重點與特色（500字內），並摘要說明主要量化成果，例如化學農藥使用風險減量、防治成本變化、產量或品質改善、示範推廣情形等'}
+        {id:'summary', label:'IPM執行成果概述', type:'textarea', maxlen:500, noEvidence:true,
+          hint:'請簡述您把IPM方法用在田間的重點與特色（500字內），並摘要說明主要量化成果，例如化學農藥使用風險減量、防治成本變化、產量或品質改善、示範推廣情形等。這裡先寫總覽就好，詳細佐證請放在下面各面向欄位'}
       ]},
       { title:'四、人力知識（評分佔45分）', fields:[
         {id:'pest_entries', label:'害物與管理方式', type:'pestlist'},
@@ -526,7 +527,8 @@ var FORMS = {
         {id:'field_safety', label:'田區環境與安全（可複選）', type:'checkbox',
           options:['落實田區環境整潔度維護，農業剩餘資材與廢棄物即時清理','規劃流暢安全的作業動線','高風險區域或特定器械周邊設置明顯危害安全標示','落實用電與灌溉設備安全防護（如漏電斷路器、配電箱防雨）','其他']},
         {id:'knowledge_detail', label:'想再補充說明（選填）', type:'textarea',
-          hint:'例如：發生時期、田間觀察到的細節、其他做法。上面勾選不夠寫的都可以補在這裡'}
+          hint:'例如：發生時期、田間觀察到的細節、其他做法。上面勾選不夠寫的都可以補在這裡',
+          evidenceHint:'防護裝備照片、藥罐標註作用機制的照片、農藥購買證明、水質或土壤檢驗報告'}
       ]},
       { title:'五、社群組織（評分佔10分）', fields:[
         {id:'info_source', label:'您從哪些管道學習IPM知識？（可複選）', type:'checkbox',
@@ -535,7 +537,10 @@ var FORMS = {
           options:['產銷班','合作社','農民團體','其他','無']},
         {id:'share_activity', label:'技術擴散：有沒有做這些事？（可複選）', type:'checkbox',
           hint:'把您的做法教給別人、擴散出去，是社群組織的加分重點',
-          options:['參加講習會或研討會','與試驗改良場所合作（如設置試驗田、示範觀摩）','主動向周邊農民分享，推廣正確IPM觀念與技術','與其他農民建立共同監測或區域共同防治機制','辦理或協助推動田間示範觀摩會、講習會','利用LINE等社群工具解答鄰近農友諮詢','其他','無']}
+          options:['參加講習會或研討會','與試驗改良場所合作（如設置試驗田、示範觀摩）','主動向周邊農民分享，推廣正確IPM觀念與技術','與其他農民建立共同監測或區域共同防治機制','辦理或協助推動田間示範觀摩會、講習會','利用LINE等社群工具解答鄰近農友諮詢','其他','無']},
+        {id:'community_detail', label:'想再補充說明（選填）', type:'textarea',
+          hint:'例如：課程／研討會名稱、參與的產銷班或協會名稱、技術擴散的活動細節。上面勾選不夠寫的都可以補在這裡',
+          evidenceHint:'課程證書（請標註課程名稱與時數）、產銷班或協會會員證、活動合照、推廣活動照片或影片連結'}
       ]},
       { title:'六、經濟效益（評分佔15分）', fields:[
         {id:'econ_records', label:'您有留哪些紀錄？（可複選）', type:'checkbox',
@@ -543,7 +548,8 @@ var FORMS = {
         {id:'econ_benefit', label:'改用IPM後，有沒有這些改變？（可複選）', type:'checkbox',
           options:['農藥成本降低','產量提升','售價提升','用藥次數減少','其他','尚未看到明顯改變']},
         {id:'econ_numbers', label:'具體數字（選填，越具體越好）', type:'textarea',
-          hint:'例如：農藥成本從每月X元降到Y元、用藥次數從N次降到M次'}
+          hint:'例如：農藥成本從每月X元降到Y元、用藥次數從N次降到M次',
+          evidenceHint:'施藥或成本紀錄表、通路收入單據、成本明細（藥劑／器械／設施折舊）'}
       ]},
       { title:'七、環境效益（評分佔30分）', fields:[
         {id:'env_friendly', label:'有沒有做這些友善環境的作法？（可複選）', type:'checkbox',
@@ -551,7 +557,8 @@ var FORMS = {
         {id:'env_reduction', label:'化學農藥減量情形（可複選）', type:'checkbox',
           options:['用藥次數減少','用藥種類減少','改用免登記資材或生物製劑替代','完全不使用化學農藥','尚未減少']},
         {id:'env_numbers', label:'具體數字（選填，越具體越好）', type:'textarea',
-          hint:'例如：化學農藥用量減少約N公斤、用藥次數從X次降到Y次'}
+          hint:'例如：化學農藥用量減少約N公斤、用藥次數從X次降到Y次',
+          evidenceHint:'友善資材購買證明、田間天敵照片、用藥前後對照的用量紀錄'}
       ]}
     ]},
   tech:{ groupName:'技術創新組', formName:'作物有害生物整合管理技術成果資料表（附件3）',
@@ -562,15 +569,21 @@ var FORMS = {
         {id:'tech_name', label:'成果（技術）名稱', type:'text'},
         {id:'tech_type', label:'技術類型（可複選）', type:'checkbox', options:['新技術','新資材','新應用策略','其他']},
         {id:'trl', label:'技術成熟度階段', type:'select', options:['TRL1-4（可行性驗證）','TRL5（實驗室驗證原型）','TRL6（實際環境驗證）','TRL7（示範/成本評估）','TRL8（商業化/技轉少量使用）','TRL9（持續生產普及）']},
-        {id:'summary', label:'成果摘要', type:'textarea', maxlen:500, hint:'本技術解決的問題、執行重點與成果（約500字）'},
-        {id:'innovation', label:'創新性', type:'textarea', maxlen:1000, hint:'與既有技術的差異、如何整合到田間管理、提升防治效能的比率。請盡量檢附科學實證數據佐證（如實驗室數據、對照組田間試驗數據）'},
-        {id:'community', label:'社群組織', type:'textarea', maxlen:1000, hint:'出版、發表、推廣、獲獎，以及跨單位協作情形'},
-        {id:'econ', label:'產業應用及經濟效益', type:'textarea', maxlen:1000, hint:'技術導入應用程度、創造的產業價值、使用者收益增加（如降低多少比例田間管理成本，請以具體數字說明）'},
-        {id:'env', label:'對環境永續之效益與影響', type:'textarea', maxlen:1000, hint:'農藥風險減量、替代高毒性高風險農藥、對淨零碳排的貢獻。請說明您怎麼估算這些效益（方法論），並附量化數據'},
-        {id:'case', label:'應用案例', type:'textarea', maxlen:1000, hint:'至少一項實際應用：應用者、概況、應用多久、場域及規模、成效、應用者聯絡資訊。第2階段實地審查原則須提供3至5處應用場域及聯絡資訊；若僅單一場域，請說明原因及代表性'},
+        {id:'summary', label:'成果摘要', type:'textarea', maxlen:500, noEvidence:true, hint:'本技術解決的問題、執行重點與成果（約500字）。這裡先寫總覽就好，詳細佐證請放在下面各欄位'},
+        {id:'innovation', label:'創新性', type:'textarea', maxlen:1000, hint:'與既有技術的差異、如何整合到田間管理、提升防治效能的比率。請盡量檢附科學實證數據佐證（如實驗室數據、對照組田間試驗數據）',
+          evidenceHint:'對照組田間試驗數據、實驗室檢測報告、技術效果前後對照照片'},
+        {id:'community', label:'社群組織', type:'textarea', maxlen:1000, hint:'出版、發表、推廣、獲獎，以及跨單位協作情形',
+          evidenceHint:'出版品或發表文章、得獎證明、跨單位合作意向書或會議紀錄'},
+        {id:'econ', label:'產業應用及經濟效益', type:'textarea', maxlen:1000, hint:'技術導入應用程度、創造的產業價值、使用者收益增加（如降低多少比例田間管理成本，請以具體數字說明）',
+          evidenceHint:'技術應用者收益數據、成本節省試算表、產業應用合約或報告'},
+        {id:'env', label:'對環境永續之效益與影響', type:'textarea', maxlen:1000, hint:'農藥風險減量、替代高毒性高風險農藥、對淨零碳排的貢獻。請說明您怎麼估算這些效益（方法論），並附量化數據',
+          evidenceHint:'農藥減量檢測數據、效益估算方法說明文件'},
+        {id:'case', label:'應用案例', type:'textarea', maxlen:1000, hint:'至少一項實際應用：應用者、概況、應用多久、場域及規模、成效、應用者聯絡資訊。第2階段實地審查原則須提供3至5處應用場域及聯絡資訊；若僅單一場域，請說明原因及代表性',
+          evidenceHint:'應用場域照片、應用者訪談紀錄或聯絡資訊'},
         {id:'fund_amount', label:'投入研發與推廣經費約（元）', type:'text'},
         {id:'fund_public', label:'其中來自公部門的比例（%）', type:'text'},
-        {id:'fund_method', label:'經費估算方式（選填）', type:'textarea', hint:'例如：OO萬元經費中包含哪些項目（人事、材料、設備等）'}
+        {id:'fund_method', label:'經費估算方式（選填）', type:'textarea', hint:'例如：OO萬元經費中包含哪些項目（人事、材料、設備等）',
+          evidenceHint:'經費明細表或收據'}
       ]}
     ]},
   promo:{ groupName:'行銷推廣組', formName:'作物有害生物整合管理行銷推廣成果資料表（附件4-1）',
@@ -578,18 +591,24 @@ var FORMS = {
     sections:[
       COMMON_BASIC,
       { title:'二、行銷推廣成果簡介', fields:[
-        {id:'intro', label:'參賽者簡介', type:'textarea', maxlen:500, hint:'主要業務項目，及與IPM行銷推廣的關連性（500字內）'},
+        {id:'intro', label:'參賽者簡介', type:'textarea', maxlen:500, noEvidence:true, hint:'主要業務項目，及與IPM行銷推廣的關連性（500字內）'},
         {id:'strategy', label:'主要推廣策略（至多3項）', type:'checkbox', options:['輔導培訓課程','田間現場示範','擔任輔導顧問','出版推廣文宣品','採購IPM農產品','行銷推廣IPM農產品','其他']},
-        {id:'summary', label:'成果摘要', type:'textarea', maxlen:1000, hint:'主要推廣策略、目標對象、成果及效益。請盡量以量化數據或具體案例說明推廣後對認知、認同及行為改變的影響'},
-        {id:'knowledge', label:'人力知識', type:'textarea', maxlen:1000, hint:'對IPM的認知、知識從哪來、辦過的推廣活動、是否聘用植物診療師協助'},
-        {id:'social', label:'社會效益', type:'textarea', maxlen:1000, hint:'用哪些推廣方式（講習、文宣、網站、展覽、食農教育），對農友/通路/消費者認知與行為的改變（附案例、問卷調查數據，問卷範例可參考附件4-2）'},
-        {id:'econ', label:'經濟效益', type:'textarea', maxlen:1000, hint:'協助建立品牌、擴大通路、提升品質售價；採購或推廣IPM農產品的規模與成效，請盡量附具體數字'},
-        {id:'env', label:'對環境永續之效益與影響', type:'textarea', maxlen:1000, hint:'協作農友達成多少比例化學農藥減量、擴大多少IPM應用面積、生物友善環境等，請盡量以量化數據呈現'},
-        {id:'case', label:'應用案例', type:'textarea', maxlen:1000, hint:'至少一項實際行銷推廣案例：目標對象、推廣情形、推廣成效'},
+        {id:'summary', label:'成果摘要', type:'textarea', maxlen:1000, noEvidence:true, hint:'主要推廣策略、目標對象、成果及效益。請盡量以量化數據或具體案例說明推廣後對認知、認同及行為改變的影響。這裡先寫總覽就好，詳細佐證請放在下面各欄位'},
+        {id:'knowledge', label:'人力知識', type:'textarea', maxlen:1000, hint:'對IPM的認知、知識從哪來、辦過的推廣活動、是否聘用植物診療師協助',
+          evidenceHint:'參與課程或講習證書、聘用植物診療師的合作文件'},
+        {id:'social', label:'社會效益', type:'textarea', maxlen:1000, hint:'用哪些推廣方式（講習、文宣、網站、展覽、食農教育），對農友/通路/消費者認知與行為的改變（附案例、問卷調查數據，問卷範例可參考附件4-2）',
+          evidenceHint:'推廣活動照片、文宣品、問卷調查結果、媒體報導連結'},
+        {id:'econ', label:'經濟效益', type:'textarea', maxlen:1000, hint:'協助建立品牌、擴大通路、提升品質售價；採購或推廣IPM農產品的規模與成效，請盡量附具體數字',
+          evidenceHint:'通路合作證明、銷售數據、品牌或產值提升的具體數字'},
+        {id:'env', label:'對環境永續之效益與影響', type:'textarea', maxlen:1000, hint:'協作農友達成多少比例化學農藥減量、擴大多少IPM應用面積、生物友善環境等，請盡量以量化數據呈現',
+          evidenceHint:'協作農友化學農藥減量數據、IPM應用面積擴大證明'},
+        {id:'case', label:'應用案例', type:'textarea', maxlen:1000, hint:'至少一項實際行銷推廣案例：目標對象、推廣情形、推廣成效',
+          evidenceHint:'目標對象訪談紀錄、推廣成效追蹤數據'},
         {id:'fund_amount', label:'近2年平均每年投入IPM行銷推廣經費約（元）', type:'text'},
         {id:'fund_public', label:'其中來自公部門的比例（%）', type:'text'},
-        {id:'fund_method', label:'經費估算方式（選填）', type:'textarea', hint:'例如：OO萬元經費中包含哪些項目'},
-        {id:'plan', label:'得獎後IPM行銷推廣活動規劃', type:'textarea', hint:'得獎者須於獲獎後2年內辦理至少2場次IPM行銷推廣活動，請概述規劃'}
+        {id:'fund_method', label:'經費估算方式（選填）', type:'textarea', hint:'例如：OO萬元經費中包含哪些項目',
+          evidenceHint:'經費明細表或收據'},
+        {id:'plan', label:'得獎後IPM行銷推廣活動規劃', type:'textarea', noEvidence:true, hint:'得獎者須於獲獎後2年內辦理至少2場次IPM行銷推廣活動，請概述規劃（這是未來規劃，還沒發生，不需要附佐證）'}
       ]}
     ]}
 };
@@ -722,14 +741,19 @@ function getEvidenceList(group,fid){
 }
 function setEvidenceList(group,fid,arr){ lsSet(evidenceKey(group,fid), JSON.stringify(arr)); }
 function getEvidenceNote(group,fid){ return lsGet(evidenceKey(group,fid)+'_note')||''; }
-function renderEvidenceWidget(group,fid){
+function renderEvidenceWidget(group,fid,evidenceHint){
   var wrap=document.createElement('div');
   wrap.style.cssText='margin-top:8px; padding:10px; background:#f5faf5; border:1px dashed #9ccc9f; border-radius:8px;';
   var lab=document.createElement('div'); lab.style.cssText='font-size:14px; color:var(--green-dark); font-weight:bold; margin-bottom:4px;';
-  lab.textContent='這一段的佐證（選填）';
+  lab.textContent='這一段要附的證明（選填，先列清單）';
   wrap.appendChild(lab);
+  if(evidenceHint){
+    var exHint=document.createElement('div'); exHint.style.cssText='font-size:13px; color:#1b5e20; margin-bottom:4px;';
+    exHint.textContent='例如：'+evidenceHint;
+    wrap.appendChild(exHint);
+  }
   var hint=document.createElement('div'); hint.style.cssText='font-size:13px; color:var(--gray); margin-bottom:6px;';
-  hint.textContent='選照片或檔案，工具只記住檔名幫您整理清單，檔案本身不會上傳；請自行保留原始檔案，投件時親自附上。';
+  hint.innerHTML='<b>這裡不會真的收您的照片，也不會上傳。</b>選檔案只是幫您「記住檔名」，整理成清單；產生報名表時，會在這一段印出提醒文字。真正的照片/檔案，請您自己保留在手機或電腦裡，投件時另外附到正式的報名表或壓縮包一起寄出。';
   wrap.appendChild(hint);
 
   var chipsBox=document.createElement('div'); chipsBox.style.cssText='display:flex; flex-wrap:wrap; gap:6px; margin-bottom:6px;';
@@ -850,7 +874,7 @@ function renderField(group,f){
       else cnt.textContent=n+' 字'; };
     ta.oninput=function(){ lsSet(key,ta.value); upd(); updateProgress(); };
     upd(); wrap.appendChild(ta); wrap.appendChild(cnt);
-    wrap.appendChild(renderEvidenceWidget(group,f.id));
+    if(!f.noEvidence) wrap.appendChild(renderEvidenceWidget(group,f.id,f.evidenceHint));
   } else if(f.type==='radio' || f.type==='checkbox'){
     var opts=document.createElement('div'); opts.className='opts';
     var savedArr = saved? saved.split('|') : [];
@@ -940,6 +964,11 @@ function makeForm(){
         var detectStr=withDetails(e.detect, e.detectDetail).join('|');
         var controlStr=withDetails(e.control, e.controlDetail).join('|');
         h+='<tr><td>'+esc(e.category)+'</td><td>'+disp(e.name)+'</td><td>'+disp(detectStr)+'</td><td>'+disp(controlStr)+'</td></tr>';
+        var pfiles=getEvidenceList(g,'pest_'+e.id), pnote=getEvidenceNote(g,'pest_'+e.id).trim();
+        var pEv=[];
+        if(pfiles.length) pEv.push('檔案：'+pfiles.join('、'));
+        if(pnote) pEv.push(pnote);
+        if(pEv.length) h+='<tr><td colspan="4" style="font-size:13px;color:#1b5e20;">待附證明：'+esc(pEv.join('；'))+'</td></tr>';
       });
       h+='</table>';
     }
@@ -948,12 +977,12 @@ function makeForm(){
       h+='<table>';
       normalFields.forEach(function(f){
         var dv=(f.type==='checkbox'||f.type==='radio') ? checklistDisplay(g,f) : disp(val(g,f.id));
-        if(f.type==='textarea'){
+        if(f.type==='textarea' && !f.noEvidence){
           var files=getEvidenceList(g,f.id), note=getEvidenceNote(g,f.id).trim();
           var evParts=[];
           if(files.length) evParts.push('檔案：'+files.join('、'));
           if(note) evParts.push(note);
-          if(evParts.length) dv+='<br><span style="font-size:13px;color:#1b5e20;">佐證：'+esc(evParts.join('；'))+'</span>';
+          if(evParts.length) dv+='<br><span style="font-size:13px;color:#1b5e20;">待附證明：'+esc(evParts.join('；'))+'</span>';
         }
         h+='<tr><th style="width:38%;">'+esc(f.label)+'</th><td>'+dv+'</td></tr>';
       });
