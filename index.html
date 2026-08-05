@@ -178,12 +178,6 @@
   </div>
   <div class="card no-print">
     <div class="result-title" id="formTitle"></div>
-    <h3 style="margin-top:0;">第一步：佐證資料與頁數規劃</h3>
-    <p class="hint">先想想要附哪些佐證資料，抓一下大概頁數，避免整份資料（含附件）超過50頁。</p>
-    <div id="pageBudgetBox"></div>
-  </div>
-  <div class="card no-print">
-    <h3 style="margin-top:0;">第二步：填寫內容</h3>
     <div class="info" style="font-size:16px;">用平常說話的方式填就好，不會的欄位可以先留白，之後再補。填好按最下面「產生報名表」，就會排好一份可以列印、投件的報名表。內容會自動存在這台裝置，下次打開繼續填。</div>
     <div id="formFields"></div>
     <button class="bigbtn" onclick="makeForm()">產生報名表</button>
@@ -194,6 +188,12 @@
     <button class="bigbtn no-print" onclick="printForm()">列印 / 存成 PDF</button>
     <button class="bigbtn secondary no-print" onclick="copyForm()">複製全部文字</button>
     <button class="bigbtn secondary no-print" onclick="showScreen('scr-form');window.scrollTo(0,0);">回上面繼續修改</button>
+  </div>
+  <div class="card no-print" id="pageBudgetCard" style="display:none;">
+    <h3 style="margin-top:0;">投件前最後確認：佐證資料與頁數</h3>
+    <p class="hint">想想看要附哪些佐證資料，抓一下大概頁數，避免整份資料（含附件）超過50頁。調整後按下面按鈕，把最新頁數更新到上面的報名表。</p>
+    <div id="pageBudgetBox"></div>
+    <button class="bigbtn secondary" onclick="makeForm()">更新報名表的頁數提醒</button>
   </div>
 </section>
 
@@ -710,7 +710,7 @@ function goForm(group){
   currentGroup=group;
   var form=FORMS[group];
   document.getElementById('formTitle').textContent=form.groupName+'：'+form.formName;
-  renderPageBudget(group, document.getElementById('pageBudgetBox'));
+  document.getElementById('pageBudgetCard').style.display='none';
   var box=document.getElementById('formFields'); box.innerHTML='';
   if(form.note){ var n=document.createElement('div'); n.className='info'; n.style.fontSize='16px'; n.textContent='填寫提醒：'+form.note; box.appendChild(n); }
   form.sections.forEach(function(sec){
@@ -861,10 +861,12 @@ function makeForm(){
   h+='</ul>';
   var pbTotal=computePageBudgetTotal(g);
   var pbColor = pbTotal>PAGE_LIMIT ? '#c62828' : (pbTotal>=PAGE_LIMIT-5 ? '#e65100' : '#1b5e20');
-  h+='<p style="font-size:15px;"><b>您規劃的預估總頁數：<span style="color:'+pbColor+';">'+pbTotal+' / '+PAGE_LIMIT+' 頁</span></b>（依「佐證資料與頁數規劃」步驟填寫，僅供參考，實際頁數依您排版後的官方附件為準）</p>';
+  h+='<p style="font-size:15px;"><b>您規劃的預估總頁數：<span style="color:'+pbColor+';">'+pbTotal+' / '+PAGE_LIMIT+' 頁</span></b>（僅供參考，實際頁數依您排版後的官方附件為準；如需調整，請至下方「佐證資料與頁數」確認後重新產生報名表）</p>';
   h+='<p style="font-size:13px;color:#666;">提醒：報名資料以50頁為限（含佐證附件），A4、本文12級字以上，表格圖說不小於10級字，不得以縮小字級、壓縮行距或文字轉圖片等方式規避頁數限制。若使用AI生成文字或請專家協助撰寫，請於報名資料聲明（附件5-2）主動標示。本表為輔助草稿，正式投件請以官方公告的附件表格為準。</p>';
   document.getElementById('formOutput').innerHTML=h;
   document.getElementById('formResultCard').style.display='block';
+  renderPageBudget(g, document.getElementById('pageBudgetBox'));
+  document.getElementById('pageBudgetCard').style.display='block';
   document.getElementById('formResultCard').scrollIntoView({behavior:'smooth'});
 }
 
