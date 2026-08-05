@@ -98,6 +98,7 @@
     body{background:#fff; font-size:12pt;}
     .card{border:none; box-shadow:none; padding:0; margin:0;}
     .doc h3{-webkit-print-color-adjust:exact; print-color-adjust:exact;}
+    .doc img{-webkit-print-color-adjust:exact; print-color-adjust:exact; page-break-inside:avoid;}
   }
 </style>
 </head>
@@ -735,17 +736,52 @@ function fkey(g,fid){ return 'ipmf_'+g+'_'+fid; }
 
 /* ---------- 逐欄佐證小工具：只記錄檔名/說明，幫忙整理「這段內容的證明放哪裡」，檔案本身不上傳 ---------- */
 function evidenceKey(group,fid){ return fkey(group,fid+'_evidence'); }
+/* 讀出的每一筆是 {name, thumb}；thumb 是壓縮過的小圖（data URI）或 null（非圖片檔案）。
+   相容舊格式（純檔名字串陣列）：讀到字串就轉成 {name:字串, thumb:null}。 */
 function getEvidenceList(group,fid){
   var raw=lsGet(evidenceKey(group,fid));
-  try{ var arr=raw?JSON.parse(raw):[]; return Array.isArray(arr)?arr:[]; }catch(e){ return []; }
+  try{
+    var arr=raw?JSON.parse(raw):[];
+    if(!Array.isArray(arr)) return [];
+    return arr.map(function(x){ return (typeof x==='string') ? {name:x, thumb:null} : x; });
+  }catch(e){ return []; }
 }
-function setEvidenceList(group,fid,arr){ lsSet(evidenceKey(group,fid), JSON.stringify(arr)); }
+/* 直接存 localStorage（不透過 lsGet/lsSet 的靜默降級），才能分辨「沙盒環境完全存不了」跟「這筆太大存不下」兩種狀況 */
+function setEvidenceList(group,fid,arr){
+  var key=evidenceKey(group,fid), json=JSON.stringify(arr);
+  var sandboxed=false;
+  try{ localStorage.length; }catch(e){ sandboxed=true; }
+  if(sandboxed){ _mem[key]=json; return {ok:true}; }
+  try{ localStorage.setItem(key,json); return {ok:true}; }
+  catch(e){ return {ok:false}; }
+}
 function getEvidenceNote(group,fid){ return lsGet(evidenceKey(group,fid)+'_note')||''; }
+/* 把圖片檔案在瀏覽器內壓縮成小縮圖（不離開這台裝置），非圖片檔案（如PDF）回傳null，只留檔名 */
+function resizeImageFile(file,maxWidth,quality){
+  return new Promise(function(resolve){
+    if(!file.type || file.type.indexOf('image/')!==0){ resolve(null); return; }
+    var reader=new FileReader();
+    reader.onload=function(e){
+      var img=new Image();
+      img.onload=function(){
+        var scale=Math.min(1, maxWidth/img.width);
+        var w=Math.max(1,Math.round(img.width*scale)), h=Math.max(1,Math.round(img.height*scale));
+        var canvas=document.createElement('canvas'); canvas.width=w; canvas.height=h;
+        var ctx=canvas.getContext('2d'); ctx.drawImage(img,0,0,w,h);
+        try{ resolve(canvas.toDataURL('image/jpeg',quality)); }catch(err){ resolve(null); }
+      };
+      img.onerror=function(){ resolve(null); };
+      img.src=e.target.result;
+    };
+    reader.onerror=function(){ resolve(null); };
+    reader.readAsDataURL(file);
+  });
+}
 function renderEvidenceWidget(group,fid,evidenceHint){
   var wrap=document.createElement('div');
   wrap.style.cssText='margin-top:8px; padding:10px; background:#f5faf5; border:1px dashed #9ccc9f; border-radius:8px;';
   var lab=document.createElement('div'); lab.style.cssText='font-size:14px; color:var(--green-dark); font-weight:bold; margin-bottom:4px;';
-  lab.textContent='這一段要附的證明（選填，先列清單）';
+  lab.textContent='這一段要附的證明（選填）';
   wrap.appendChild(lab);
   if(evidenceHint){
     var exHint=document.createElement('div'); exHint.style.cssText='font-size:13px; color:#1b5e20; margin-bottom:4px;';
@@ -753,16 +789,21 @@ function renderEvidenceWidget(group,fid,evidenceHint){
     wrap.appendChild(exHint);
   }
   var hint=document.createElement('div'); hint.style.cssText='font-size:13px; color:var(--gray); margin-bottom:6px;';
-  hint.innerHTML='<b>這裡不會真的收您的照片，也不會上傳。</b>選檔案只是幫您「記住檔名」，整理成清單；產生報名表時，會在這一段印出提醒文字。真正的照片/檔案，請您自己保留在手機或電腦裡，投件時另外附到正式的報名表或壓縮包一起寄出。';
+  hint.innerHTML='選照片會在這台裝置裡自動壓成小縮圖存起來（不會上傳），產生報名表時縮圖會印在這一段旁邊，方便您核對。<b>縮圖畫質較低僅供對照，正式投件請另外附上手機/電腦裡的原始檔案</b>；選PDF等非圖片檔案則只會記住檔名。';
   wrap.appendChild(hint);
 
-  var chipsBox=document.createElement('div'); chipsBox.style.cssText='display:flex; flex-wrap:wrap; gap:6px; margin-bottom:6px;';
+  var chipsBox=document.createElement('div'); chipsBox.style.cssText='display:flex; flex-wrap:wrap; gap:8px; margin-bottom:6px;';
   function renderChips(){
     chipsBox.innerHTML='';
-    getEvidenceList(group,fid).forEach(function(name,idx){
+    getEvidenceList(group,fid).forEach(function(item,idx){
       var chip=document.createElement('span');
-      chip.style.cssText='background:#e8f5e9; border:1px solid #a5d6a7; border-radius:14px; padding:4px 10px; font-size:14px; display:inline-flex; align-items:center; gap:6px;';
-      chip.appendChild(document.createTextNode(name));
+      chip.style.cssText='background:#e8f5e9; border:1px solid #a5d6a7; border-radius:10px; padding:4px 8px; font-size:14px; display:inline-flex; align-items:center; gap:6px;';
+      if(item.thumb){
+        var img=document.createElement('img'); img.src=item.thumb;
+        img.style.cssText='width:36px; height:36px; object-fit:cover; border-radius:6px;';
+        chip.appendChild(img);
+      }
+      chip.appendChild(document.createTextNode(item.name));
       var del=document.createElement('button'); del.type='button'; del.textContent='×';
       del.style.cssText='border:none; background:none; color:#c62828; font-weight:bold; cursor:pointer; font-size:15px; padding:0; line-height:1;';
       del.onclick=function(){ var arr=getEvidenceList(group,fid); arr.splice(idx,1); setEvidenceList(group,fid,arr); renderChips(); };
@@ -773,14 +814,27 @@ function renderEvidenceWidget(group,fid,evidenceHint){
   renderChips();
   wrap.appendChild(chipsBox);
 
+  var statusMsg=document.createElement('div'); statusMsg.style.cssText='font-size:13px; color:var(--blue); display:none;';
+  wrap.appendChild(statusMsg);
+
   var fileInput=document.createElement('input'); fileInput.type='file'; fileInput.multiple=true;
   fileInput.accept='image/*,.pdf,.doc,.docx'; fileInput.style.fontSize='14px';
   fileInput.onchange=function(){
-    var arr=getEvidenceList(group,fid);
-    [].forEach.call(fileInput.files,function(f){ arr.push(f.name); });
-    setEvidenceList(group,fid,arr);
-    fileInput.value='';
-    renderChips();
+    var files=[].slice.call(fileInput.files);
+    if(files.length===0) return;
+    statusMsg.style.display='block'; statusMsg.textContent='處理中…';
+    Promise.all(files.map(function(f){ return resizeImageFile(f,500,0.55).then(function(thumb){ return {name:f.name, thumb:thumb}; }); }))
+      .then(function(newItems){
+        var arr=getEvidenceList(group,fid).concat(newItems);
+        var result=setEvidenceList(group,fid,arr);
+        statusMsg.style.display='none';
+        fileInput.value='';
+        if(!result.ok){
+          alert('這張照片存不下（裝置的瀏覽器儲存空間不夠了）。建議：換一張畫質較小的照片，或改用下面「直接打字說明」代替——一樣能提醒評審這裡有佐證，效果相同。');
+          return;
+        }
+        renderChips();
+      });
   };
   wrap.appendChild(fileInput);
 
@@ -927,6 +981,14 @@ function updateProgress(){
 
 /* ---------- 產生報名表 ---------- */
 function esc(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+/* 把佐證清單裡有縮圖的項目印成小圖片，方便投件前核對；沒有縮圖的（如PDF）不印圖 */
+function evidenceImagesHtml(items){
+  var imgs=(items||[]).filter(function(x){ return x && x.thumb; });
+  if(!imgs.length) return '';
+  return '<div style="margin-top:4px;">'+imgs.map(function(x){
+    return '<img src="'+x.thumb+'" style="max-width:110px; max-height:110px; margin:2px; border:1px solid #ccc; border-radius:4px; object-fit:cover;" alt="'+esc(x.name)+'">';
+  }).join('')+'</div>';
+}
 function val(group,fid){ return (lsGet(fkey(group,fid))||'').trim(); }
 function disp(v){ return v? '<span class="val">'+esc(v).replace(/\|/g,'、')+'</span>' : '<span class="blank">（未填）</span>'; }
 /* 把勾選陣列裡的「其他」換成「其他（補充文字）」再顯示 */
@@ -966,9 +1028,9 @@ function makeForm(){
         h+='<tr><td>'+esc(e.category)+'</td><td>'+disp(e.name)+'</td><td>'+disp(detectStr)+'</td><td>'+disp(controlStr)+'</td></tr>';
         var pfiles=getEvidenceList(g,'pest_'+e.id), pnote=getEvidenceNote(g,'pest_'+e.id).trim();
         var pEv=[];
-        if(pfiles.length) pEv.push('檔案：'+pfiles.join('、'));
+        if(pfiles.length) pEv.push('檔案：'+pfiles.map(function(x){return x.name;}).join('、'));
         if(pnote) pEv.push(pnote);
-        if(pEv.length) h+='<tr><td colspan="4" style="font-size:13px;color:#1b5e20;">待附證明：'+esc(pEv.join('；'))+'</td></tr>';
+        if(pEv.length) h+='<tr><td colspan="4" style="font-size:13px;color:#1b5e20;">待附證明：'+esc(pEv.join('；'))+evidenceImagesHtml(pfiles)+'</td></tr>';
       });
       h+='</table>';
     }
@@ -980,9 +1042,9 @@ function makeForm(){
         if(f.type==='textarea' && !f.noEvidence){
           var files=getEvidenceList(g,f.id), note=getEvidenceNote(g,f.id).trim();
           var evParts=[];
-          if(files.length) evParts.push('檔案：'+files.join('、'));
+          if(files.length) evParts.push('檔案：'+files.map(function(x){return x.name;}).join('、'));
           if(note) evParts.push(note);
-          if(evParts.length) dv+='<br><span style="font-size:13px;color:#1b5e20;">待附證明：'+esc(evParts.join('；'))+'</span>';
+          if(evParts.length) dv+='<br><span style="font-size:13px;color:#1b5e20;">待附證明：'+esc(evParts.join('；'))+'</span>'+evidenceImagesHtml(files);
         }
         h+='<tr><th style="width:38%;">'+esc(f.label)+'</th><td>'+dv+'</td></tr>';
       });
