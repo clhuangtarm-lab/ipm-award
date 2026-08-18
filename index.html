@@ -468,7 +468,8 @@ function renderPestSection(group,container){
   container.appendChild(intro);
   var entries=getPestEntries(group);
   if(entries.length===0){ entries=[newPestEntry('p0')]; setPestEntries(group,entries); }
-  /* 相容舊版資料格式（detect/control 兩欄）：搬到新的 strategies.monitor，其餘管理方法請使用者在新欄位重新勾選 */
+  /* 相容舊版資料格式（detect/control 兩欄，含更舊的 detectOther/controlOther 純字串版本）：
+     搬到新的 strategies.monitor，其餘管理方法請使用者在新欄位重新勾選；遷移完把舊欄位刪乾淨，不留殘餘資料 */
   var migrated=false;
   entries.forEach(function(entry){
     if(!entry.strategies){
@@ -476,7 +477,13 @@ function renderPestSection(group,container){
       entry.stage=entry.stage||''; entry.climate=entry.climate||[]; entry.climateDetail=entry.climateDetail||{};
       entry.transmission=entry.transmission||[]; entry.transmissionDetail=entry.transmissionDetail||{};
       entry.strategies=fresh.strategies; entry.strategyDetails=fresh.strategyDetails;
-      if(entry.detect && entry.detect.length){ entry.strategies.monitor=entry.detect; entry.strategyDetails.monitor=entry.detectDetail||{}; }
+      if(entry.detect && entry.detect.length){
+        entry.strategies.monitor=entry.detect;
+        entry.strategyDetails.monitor = entry.detectDetail || (entry.detectOther ? {'其他':entry.detectOther} : {});
+      }
+      delete entry.detect; delete entry.control;
+      delete entry.detectDetail; delete entry.controlDetail;
+      delete entry.detectOther; delete entry.controlOther;
       migrated=true;
     }
   });
