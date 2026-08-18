@@ -366,23 +366,50 @@ function showResult(){
   showScreen('scr-result');
 }
 
-/* ---------- 害物清單元件：不同類別害物對應不同管理方法選項 ---------- */
+/* ---------- 害物清單元件：對齊官方附件2「害物種類×IPM策略」大表，不同類別害物給對應選項 ---------- */
+/* 官方欄位：發生盛期、傳播途徑、耕作管理、物理干預、監測、天敵昆蟲、微生物製劑、免登資材、化學防治、其他 */
+var PEST_CLIMATE_OPTIONS=['高溫期','高溼期','陰濕期','乾旱期','風力強','日夜溫差大','其他'];
+var PEST_TRANSMISSION_OPTIONS=['風、雨水','昆蟲','機械','人、動物','其他'];
+var PEST_STRATEGY_GROUPS=[
+  {key:'monitor', label:'監測（您怎麼發現、觀察害物動態）'},
+  {key:'cultivation', label:'耕作管理'},
+  {key:'physical', label:'物理干預'},
+  {key:'beneficial', label:'天敵昆蟲'},
+  {key:'microbial', label:'微生物製劑'},
+  {key:'other_methods', label:'免登資材與化學防治'}
+];
 var PEST_CATEGORY_OPTIONS = {
   '病害':{
-    detect:['定期巡田觀察','症狀比對或請專家鑑定','參考氣象資料（高溫多濕期等）研判','其他'],
-    control:['抗病品種','健康種苗','田間衛生（清除病葉病果）','輪作','改善通風或排水','土壤消毒','合理施肥','微生物製劑（如枯草桿菌、木黴菌）','免登記植物保護資材','化學農藥（必要時）','其他']
+    monitor:['定期巡田觀察','症狀比對或請專家鑑定','參考氣象資料（高溫多濕期等）研判','其他'],
+    cultivation:['耐病品種','健康的種苗(子)','田間衛生（清除病葉病果）','輪作','改善通風或排水','土壤消毒','合理施肥','移除殘株','其他'],
+    physical:['套袋或覆蓋物','移除病株','其他'],
+    beneficial:['其他（病害較少使用天敵防治，若有特殊做法請說明）'],
+    microbial:['木黴菌','枯草桿菌','液化澱粉芽孢桿菌','其他'],
+    other_methods:['免登記植物保護資材','化學農藥（必要時）','其他']
   },
   '蟲害':{
-    detect:['定期巡田觀察','黃色或藍色黏紙監測','費洛蒙誘捕器監測','請專家鑑定','其他'],
-    control:['黏紙誘捕','燈光誘引','防蟲網或設施','性費洛蒙','天敵昆蟲','微生物製劑（如蘇力菌、白殭菌）','套袋或覆蓋物','人工捕殺','免登記植物保護資材','化學農藥（必要時）','其他']
+    monitor:['定期巡田觀察','黃色或藍色黏紙監測','費洛蒙誘捕器監測','請專家鑑定','其他'],
+    cultivation:['田間衛生','改善通風或排水','輪作','移除殘株','雜草管理','其他'],
+    physical:['黏紙誘捕','燈光誘引','防蟲網或設施','套袋或覆蓋物','人工捕殺','其他'],
+    beneficial:['天敵昆蟲（如瓢蟲、草蛉、寄生蜂等）','性費洛蒙／交配干擾劑','誘蟲器','其他'],
+    microbial:['蘇力菌','白殭菌','其他'],
+    other_methods:['免登記植物保護資材','化學農藥（必要時）','其他']
   },
   '草害':{
-    detect:['定期巡田觀察','其他'],
-    control:['人工或機械除草','草生栽培','覆蓋物（如黑布、稻殼）','輪作','化學除草劑（必要時）','其他']
+    monitor:['定期巡田觀察','其他'],
+    cultivation:['輪作','雜草管理','採收後移除殘株','其他'],
+    physical:['覆蓋物（如黑布、稻殼）','人工或機械除草','其他'],
+    beneficial:['其他（草害較不適用，若有特殊做法請說明）'],
+    microbial:['其他（草害較不適用，若有特殊做法請說明）'],
+    other_methods:['化學除草劑（必要時）','其他']
   },
   '其他':{
-    detect:['定期巡田觀察','請專家鑑定','其他'],
-    control:['耕作管理調整','物理防治','生物防治','免登記植物保護資材','化學農藥（必要時）','其他']
+    monitor:['定期巡田觀察','請專家鑑定','其他'],
+    cultivation:['耕作管理調整','其他'],
+    physical:['物理防治','其他'],
+    beneficial:['生物防治','其他'],
+    microbial:['其他'],
+    other_methods:['免登記植物保護資材','化學農藥（必要時）','其他']
   }
 };
 function getPestEntries(group){
@@ -419,26 +446,47 @@ function renderPestCheckGroup(label,options,selectedArr,onChange,detailTriggers,
   wrap.appendChild(opts);
   return wrap;
 }
-var PEST_DETECT_DETAIL_TRIGGERS={'其他':'請說明'};
-var PEST_CONTROL_DETAIL_TRIGGERS={
+var PEST_GENERIC_TRIGGERS={'其他':'請說明'};
+var PEST_OTHER_METHODS_TRIGGERS={
   '其他':'請說明',
   '化學農藥（必要時）':'請填藥劑名稱、使用量或次數等（選填）',
-  '化學除草劑（必要時）':'請填藥劑名稱、使用量或次數等（選填）'
+  '化學除草劑（必要時）':'請填藥劑名稱、使用量或次數等（選填）',
+  '免登記植物保護資材':'請填資材名稱及施用方式（選填）'
 };
+function newPestEntry(id){
+  var strategies={}, strategyDetails={};
+  PEST_STRATEGY_GROUPS.forEach(function(sg){ strategies[sg.key]=[]; strategyDetails[sg.key]={}; });
+  return {id:id, category:'蟲害', name:'',
+    stage:'', climate:[], climateDetail:{},
+    transmission:[], transmissionDetail:{},
+    strategies:strategies, strategyDetails:strategyDetails};
+}
 function renderPestSection(group,container){
   container.innerHTML='';
   var intro=document.createElement('div'); intro.className='info'; intro.style.fontSize='15px';
-  intro.textContent='不同害物（病害、蟲害、草害）處理方式不同，請依實際情形逐一新增，選了類別後才會出現對應的方法選項。可新增多筆。';
+  intro.textContent='這裡對照官方附件2的「害物種類×IPM策略」表格設計，逐一新增您田裡實際遇到的害物，選了類別後才會出現對應的方法選項。可新增多筆。';
   container.appendChild(intro);
   var entries=getPestEntries(group);
-  if(entries.length===0){ entries=[{id:'p0',category:'蟲害',name:'',detect:[],control:[],detectDetail:{},controlDetail:{}}]; setPestEntries(group,entries); }
-  /* 相容舊版單一「其他」欄位資料，遷移為每選項各自的填空 map */
-  var migrated=false;
+  if(entries.length===0){ entries=[newPestEntry('p0')]; setPestEntries(group,entries); }
+  /* 相容舊版資料格式（detect/control 兩欄）：搬到新的 strategies.monitor，其餘管理方法請使用者在新欄位重新勾選 */
+  var migrated=false, hadLegacy=false;
   entries.forEach(function(entry){
-    if(!entry.detectDetail){ entry.detectDetail = entry.detectOther ? {'其他':entry.detectOther} : {}; migrated=true; }
-    if(!entry.controlDetail){ entry.controlDetail = entry.controlOther ? {'其他':entry.controlOther} : {}; migrated=true; }
+    if(!entry.strategies){
+      hadLegacy = hadLegacy || (entry.detect&&entry.detect.length) || (entry.control&&entry.control.length);
+      var fresh=newPestEntry(entry.id);
+      entry.stage=entry.stage||''; entry.climate=entry.climate||[]; entry.climateDetail=entry.climateDetail||{};
+      entry.transmission=entry.transmission||[]; entry.transmissionDetail=entry.transmissionDetail||{};
+      entry.strategies=fresh.strategies; entry.strategyDetails=fresh.strategyDetails;
+      if(entry.detect && entry.detect.length){ entry.strategies.monitor=entry.detect; entry.strategyDetails.monitor=entry.detectDetail||{}; }
+      migrated=true;
+    }
   });
   if(migrated) setPestEntries(group,entries);
+  if(hadLegacy){
+    var warnBox=document.createElement('div'); warnBox.className='warn'; warnBox.style.fontSize='15px';
+    warnBox.textContent='提醒：害物欄位改版了，「監測」已幫您保留，但「用了哪些方法管理」需要在下面重新對照分類勾選一次，抱歉造成不便。';
+    container.appendChild(warnBox);
+  }
   entries.forEach(function(entry,idx){
     var box=document.createElement('div');
     box.style.cssText='border:2px solid #b7d8bb; border-radius:12px; padding:14px; margin:12px 0; background:#fbfffb;';
@@ -450,7 +498,11 @@ function renderPestSection(group,container){
     var catLab=document.createElement('label'); catLab.className='q'; catLab.textContent='這是哪一類？'; catWrap.appendChild(catLab);
     var sel=document.createElement('select');
     ['病害','蟲害','草害','其他'].forEach(function(c){ var o=document.createElement('option'); o.value=c; o.textContent=c; if(entry.category===c) o.selected=true; sel.appendChild(o); });
-    sel.onchange=function(){ entry.category=sel.value; entry.detect=[]; entry.control=[]; entry.detectDetail={}; entry.controlDetail={}; setPestEntries(group,entries); renderPestSection(group,container); };
+    sel.onchange=function(){
+      entry.category=sel.value;
+      PEST_STRATEGY_GROUPS.forEach(function(sg){ entry.strategies[sg.key]=[]; entry.strategyDetails[sg.key]={}; });
+      setPestEntries(group,entries); renderPestSection(group,container);
+    };
     catWrap.appendChild(sel); box.appendChild(catWrap);
 
     var nameWrap=document.createElement('div'); nameWrap.className='field';
@@ -460,15 +512,35 @@ function renderPestSection(group,container){
     inp.oninput=function(){ entry.name=inp.value; setPestEntries(group,entries); updateProgress(); };
     nameWrap.appendChild(inp); box.appendChild(nameWrap);
 
+    /* 發生盛期：生長階段(文字) + 氣候條件(勾選) */
+    var stageWrap=document.createElement('div'); stageWrap.className='field';
+    var stageLab=document.createElement('label'); stageLab.className='q'; stageLab.textContent='發生盛期（作物長到什麼階段、什麼天氣狀況下容易發生）'; stageWrap.appendChild(stageLab);
+    var stageHint=document.createElement('div'); stageHint.className='fhint'; stageHint.textContent='生長階段，例如：苗期、開花期、果實期'; stageWrap.appendChild(stageHint);
+    var stageInp=document.createElement('input'); stageInp.type='text'; stageInp.value=entry.stage||'';
+    stageInp.oninput=function(){ entry.stage=stageInp.value; setPestEntries(group,entries); };
+    stageWrap.appendChild(stageInp);
+    box.appendChild(stageWrap);
+    box.appendChild(renderPestCheckGroup('氣候條件（可複選）',PEST_CLIMATE_OPTIONS,entry.climate,
+      function(vals){ entry.climate=vals; setPestEntries(group,entries); },
+      PEST_GENERIC_TRIGGERS, entry.climateDetail,
+      function(op,v){ entry.climateDetail[op]=v; setPestEntries(group,entries); }));
+
+    /* 傳播途徑 */
+    box.appendChild(renderPestCheckGroup('傳播途徑（這個害物怎麼從一株傳到另一株、一塊田傳到另一塊田，可複選）',PEST_TRANSMISSION_OPTIONS,entry.transmission,
+      function(vals){ entry.transmission=vals; setPestEntries(group,entries); },
+      PEST_GENERIC_TRIGGERS, entry.transmissionDetail,
+      function(op,v){ entry.transmissionDetail[op]=v; setPestEntries(group,entries); }));
+
+    /* 六大管理策略（對齊官方IPM策略欄位） */
     var catOpts=PEST_CATEGORY_OPTIONS[entry.category];
-    box.appendChild(renderPestCheckGroup('您怎麼發現／判斷發生？',catOpts.detect,entry.detect,
-      function(vals){ entry.detect=vals; setPestEntries(group,entries); },
-      PEST_DETECT_DETAIL_TRIGGERS, entry.detectDetail,
-      function(op,v){ entry.detectDetail[op]=v; setPestEntries(group,entries); }));
-    box.appendChild(renderPestCheckGroup('用了哪些方法管理？',catOpts.control,entry.control,
-      function(vals){ entry.control=vals; setPestEntries(group,entries); },
-      PEST_CONTROL_DETAIL_TRIGGERS, entry.controlDetail,
-      function(op,v){ entry.controlDetail[op]=v; setPestEntries(group,entries); }));
+    PEST_STRATEGY_GROUPS.forEach(function(sg){
+      var triggers = sg.key==='other_methods' ? PEST_OTHER_METHODS_TRIGGERS : PEST_GENERIC_TRIGGERS;
+      box.appendChild(renderPestCheckGroup(sg.label, catOpts[sg.key]||['其他'], entry.strategies[sg.key],
+        function(vals){ entry.strategies[sg.key]=vals; setPestEntries(group,entries); },
+        triggers, entry.strategyDetails[sg.key],
+        function(op,v){ entry.strategyDetails[sg.key][op]=v; setPestEntries(group,entries); }));
+    });
+
     box.appendChild(renderEvidenceWidget(group,'pest_'+entry.id,'田間監測照片（標註日期，呈現病蟲害密度變化）、施藥或防治紀錄、防治藥劑名稱與用量'));
 
     if(entries.length>1){
@@ -479,28 +551,30 @@ function renderPestSection(group,container){
     container.appendChild(box);
   });
   var addBtn=document.createElement('button'); addBtn.type='button'; addBtn.className='bigbtn secondary'; addBtn.textContent='+ 新增一種病蟲草害';
-  addBtn.onclick=function(){ entries.push({id:'p'+Date.now(),category:'蟲害',name:'',detect:[],control:[],detectDetail:{},controlDetail:{}}); setPestEntries(group,entries); renderPestSection(group,container); };
+  addBtn.onclick=function(){ entries.push(newPestEntry('p'+Date.now())); setPestEntries(group,entries); renderPestSection(group,container); };
   container.appendChild(addBtn);
 }
 
 /* ---------- 報名表欄位定義（依第五屆評選辦法公告版附件2/3/4-1）---------- */
-var COMMON_BASIC = { title:'一、基本資料', fields:[
-  {id:'entry_type', label:'報名類別', type:'radio', options:['個人','團體/單位']},
-  {id:'name', label:'姓名（個人報名）／團體單位名稱（團體報名）', type:'text'},
-  {id:'members', label:'團體參賽成員姓名（團體報名才填）', type:'text', hint:'團隊成員限由經營／相關人員組成'},
-  {id:'org', label:'所屬單位', type:'text'},
-  {id:'contact_name', label:'聯絡人姓名／職稱', type:'text'},
-  {id:'phone', label:'聯絡人手機號碼', type:'text'},
-  {id:'email', label:'聯絡人電子郵件信箱', type:'text'},
-  {id:'address', label:'聯絡人地址', type:'text'},
-  {id:'coop', label:'是否與試驗改良場所／學研單位／儲備植物醫師合作或接受輔導', type:'radio', options:['否','是']},
-  {id:'coop_detail', label:'若「是」，合作或輔導單位與姓名', type:'text'}
-]};
+/* 三組共用的基本資料欄位。「是否與試驗改良場所合作」這題官方文件在各組位置不同：
+   技術創新組／行銷推廣組放在「一、基本資料」最後；現場操作組則放在「二、參賽作物相關資料」最後，故不放在這裡共用。 */
+function basicFields(){
+  return [
+    {id:'entry_type', label:'報名類別', type:'radio', options:['個人','團體/單位']},
+    {id:'name', label:'姓名（個人報名）／團體單位名稱（團體報名）', type:'text'},
+    {id:'members', label:'團體參賽成員姓名（團體報名才填）', type:'text', hint:'團隊成員限由經營／相關人員組成'},
+    {id:'org', label:'所屬單位', type:'text'},
+    {id:'contact_name', label:'聯絡人姓名／職稱', type:'text'},
+    {id:'phone', label:'聯絡人手機號碼', type:'text'},
+    {id:'email', label:'聯絡人電子郵件信箱', type:'text'},
+    {id:'address', label:'聯絡人地址', type:'text'}
+  ];
+}
 
 var FORMS = {
   field:{ groupName:'現場操作組', formName:'作物有害生物整合管理方法項目表（附件2）',
     sections:[
-      COMMON_BASIC,
+      { title:'一、基本資料', fields: basicFields() },
       { title:'二、參賽作物相關資料', fields:[
         {id:'crop_class', label:'參賽作物分類（可複選）', type:'checkbox', options:['稻米','果樹','蔬菜','雜糧及特作','其他']},
         {id:'crop_name', label:'參賽作物別', type:'text'},
@@ -511,7 +585,9 @@ var FORMS = {
         {id:'yield', label:'每期單位面積產量', type:'text', hint:'例：每年2期，每期鮮重3000公斤/公頃'},
         {id:'plant_method', label:'主要栽種方式', type:'checkbox', options:['露天','設施','網室','其他']},
         {id:'harvest', label:'採收月份（例：3月至6月）', type:'text'},
-        {id:'cert', label:'已獲得之認證（需附佐證資料）', type:'checkbox', options:['有機','有機轉型期','產銷履歷升級版TGAP PLUS','產銷履歷','其他','無']}
+        {id:'cert', label:'已獲得之認證（需附佐證資料）', type:'checkbox', options:['有機','有機轉型期','產銷履歷升級版TGAP PLUS','產銷履歷','其他','無']},
+        {id:'coop', label:'是否與試驗改良場所、學研單位、儲備植物醫師/植物診療師合作或接受輔導', type:'radio', options:['否','是']},
+        {id:'coop_detail', label:'若「是」，合作或輔導人員所任職之單位與姓名', type:'text'}
       ]},
       { title:'三、IPM執行成果概述', fields:[
         {id:'summary', label:'IPM執行成果概述', type:'textarea', maxlen:500, noEvidence:true,
@@ -519,9 +595,11 @@ var FORMS = {
       ]},
       { title:'四、人力知識（評分佔45分）', fields:[
         {id:'pest_entries', label:'害物與管理方式', type:'pestlist'},
-        {id:'safety_gear', label:'用藥或田間作業時的安全防護（可複選）', type:'checkbox',
+        {id:'safety_gear', label:'安全防護措施（可複選）', type:'checkbox',
           options:['口鼻防護具','呼吸防護具','眼部防護具','手套','雨鞋','全套衣','未使用化學農藥','其他']},
-        {id:'dosing_principle', label:'用藥原則（若有使用化學農藥，可複選）', type:'checkbox',
+        {id:'correct_diagnosis', label:'正確診斷（用藥或防治前，您確認了哪些事？可複選）', type:'checkbox',
+          options:['確認害物種類','確認發生生態','氣候環境條件','其他']},
+        {id:'dosing_principle', label:'對症用藥（若有使用化學農藥，可複選）', type:'checkbox',
           options:['選用已登記藥劑','依標籤指示使用','選擇低毒性藥劑','遵守安全採收期','單劑輪流使用避免抗藥性','其他','未使用化學農藥']},
         {id:'regulation_compliance', label:'法規認知與合規性（可複選）', type:'checkbox',
           options:['遵照農藥管理法，僅使用該作物核准登記之合法藥劑','遵守安全採收期（停藥期）規定','具備禁用或偽劣農藥辨識能力，田區絕不存放或使用非法資材','遵循免登記植物保護資材規範，防範違規添加化學成分','定期參與農藥安全與法規講習','其他']},
@@ -532,31 +610,67 @@ var FORMS = {
           evidenceHint:'防護裝備照片、藥罐標註作用機制的照片、農藥購買證明、水質或土壤檢驗報告'}
       ]},
       { title:'五、社群組織（評分佔10分）', fields:[
-        {id:'info_source', label:'您從哪些管道學習IPM知識？（可複選）', type:'checkbox',
-          options:['農改場或試驗所','農會課程','產銷班交流','書籍或手冊','網路社群','講習會或研討會','其他']},
-        {id:'org_join', label:'您有沒有參加這些組織？（可複選）', type:'checkbox',
+        {id:'ref_books', label:'書籍與參考資料：您參考過哪些資料？（可複選）', type:'checkbox',
+          options:['作物營養需求','施肥手冊','病害發生與管理','蟲害發生與管理','雜草種類與防除','最新登記藥劑清單','農藥使用技術','作物栽培管理手冊','其他']},
+        {id:'org_join', label:'農民組織：您有沒有參加這些組織？（可複選）', type:'checkbox',
           options:['產銷班','合作社','農民團體','其他','無']},
-        {id:'share_activity', label:'技術擴散：有沒有做這些事？（可複選）', type:'checkbox',
-          hint:'把您的做法教給別人、擴散出去，是社群組織的加分重點',
-          options:['參加講習會或研討會','與試驗改良場所合作（如設置試驗田、示範觀摩）','主動向周邊農民分享，推廣正確IPM觀念與技術','與其他農民建立共同監測或區域共同防治機制','辦理或協助推動田間示範觀摩會、講習會','利用LINE等社群工具解答鄰近農友諮詢','其他','無']},
+        {id:'meetings', label:'參加講習會、研討會等', type:'textarea', hint:'請列舉參與過的會議名稱（選填）'},
+        {id:'online_community', label:'網路社群', type:'textarea', hint:'請列舉參與的社群，例如LINE群組、臉書社團名稱（選填）'},
+        {id:'tech_exchange', label:'技術交流與經驗分享', type:'textarea', hint:'請說明您和其他農友交流IPM經驗的情形（選填）'},
+        {id:'research_coop', label:'與試驗研究單位合作（可複選）', type:'checkbox',
+          options:['試用新防治技術','設置試驗田區','辦理示範觀摩','辦理講習研討會','推廣新防治技術','其他']},
+        {id:'pathologist_coop', label:'與植物診療師合作或接受輔導', type:'text', hint:'若有，請寫明植物診療師的單位、姓名（選填）'},
+        {id:'tech_diffusion', label:'技術擴散：有沒有把您的做法教給別人、擴散出去？（可複選）', type:'checkbox',
+          hint:'這是社群組織的加分重點',
+          options:['主動向周邊農民分享，推廣正確IPM觀念與技術','與其他農民建立共同監測或區域共同防治機制','辦理或協助推動田間示範觀摩會、講習會，擴散成功經驗','利用LINE等社群媒體或通訊軟體，正確解答鄰近農友諮詢','其他']},
         {id:'community_detail', label:'想再補充說明（選填）', type:'textarea',
-          hint:'例如：課程／研討會名稱、參與的產銷班或協會名稱、技術擴散的活動細節。上面勾選不夠寫的都可以補在這裡',
+          hint:'上面勾選或填寫不夠的都可以補在這裡',
           evidenceHint:'課程證書（請標註課程名稱與時數）、產銷班或協會會員證、活動合照、推廣活動照片或影片連結'}
       ]},
       { title:'六、經濟效益（評分佔15分）', fields:[
-        {id:'econ_records', label:'您有留哪些紀錄？（可複選）', type:'checkbox',
-          options:['施藥紀錄（藥劑種類、用量、時間）','成本紀錄','收益紀錄','病蟲害損失紀錄','其他','無']},
-        {id:'econ_benefit', label:'改用IPM後，有沒有這些改變？（可複選）', type:'checkbox',
-          options:['農藥成本降低','產量提升','售價提升','用藥次數減少','其他','尚未看到明顯改變']},
+        {id:'pest_loss_record', label:'有害生物經濟損害紀錄（可複選）', type:'checkbox',
+          options:['評估與記錄有害生物造成的經濟損失','其他']},
+        {id:'spray_record_items', label:'保存施藥紀錄：您的紀錄包含哪些項目？（可複選）', type:'checkbox',
+          options:['作物種類','害物種類','藥劑種類及施用量','施用地點','施藥時間','施用器械','氣象資料','安全採收期','廢棄物處理','氣象因子','施用人員','其他']},
+        {id:'benefit_eval', label:'效益評估（可複選）', type:'checkbox',
+          options:['防治成果評估','藥效評估','藥害評估','環境影響評估','其他']},
+        {id:'cost_eval', label:'成本評估：您算過哪些成本？（可複選）', type:'checkbox',
+          options:['藥劑成本','器械成本（含器械折舊）','設施攤提（溫網室、灌溉等設備折舊）','環境成本','人力成本','其他']},
+        {id:'income_record', label:'收益紀錄（可複選）', type:'checkbox',
+          options:['記錄農產品總收入','記錄淨收益','其他']},
         {id:'econ_numbers', label:'具體數字（選填，越具體越好）', type:'textarea',
           hint:'例如：農藥成本從每月X元降到Y元、用藥次數從N次降到M次',
           evidenceHint:'施藥或成本紀錄表、通路收入單據、成本明細（藥劑／器械／設施折舊）'}
       ]},
       { title:'七、環境效益（評分佔30分）', fields:[
-        {id:'env_friendly', label:'有沒有做這些友善環境的作法？（可複選）', type:'checkbox',
-          options:['保留草生或天敵棲地','避免影響授粉昆蟲','減少對水質或土壤的影響','藥液飄散防範（如避開強風時段）','妥善處理廢棄物及廢容器','其他']},
-        {id:'env_reduction', label:'化學農藥減量情形（可複選）', type:'checkbox',
+        {id:'env_reduction', label:'化學農藥減量情形（先講結果，可複選）', type:'checkbox',
           options:['用藥次數減少','用藥種類減少','改用免登記資材或生物製劑替代','完全不使用化學農藥','尚未減少']},
+        {id:'beneficial_impact', label:'對有益生物影響：您考量了哪些？（可複選）', type:'checkbox',
+          options:['考量對天敵及授粉昆蟲之影響','對水生生物之影響','其他']},
+        {id:'env_impact', label:'對環境影響：您考量了哪些？（可複選）', type:'checkbox',
+          options:['考量對水質之影響','考量對土壤之影響','其他']},
+        {id:'coverage', label:'植物保護資材施用時－覆蓋率（可複選）', type:'checkbox',
+          hint:'噴藥時怎麼確保噴得均勻、不浪費',
+          options:['精確藥液量','定量、均勻噴施','噴施方向與角度','檢測藥液霧粒是否均勻分布','其他']},
+        {id:'timing', label:'植物保護資材施用時－施用時機（可複選）', type:'checkbox',
+          options:['發生初期','作物生長期適合害物發生時','氣候適合發生時','其他']},
+        {id:'usage_method', label:'植物保護資材施用時－使用方法（可複選）', type:'checkbox',
+          options:['單劑使用','混合使用','輪流使用','依作用機制選用','依他人建議使用','依網路訊息使用','其他']},
+        {id:'weather_factor', label:'植物保護資材施用時－氣象因子（噴藥前您會考量哪些天氣狀況？可複選）', type:'checkbox',
+          options:['風向、風速','溫度','濕度','光照','其他']},
+        {id:'drift_prevention', label:'藥液飄散防範（可複選）', type:'checkbox',
+          options:['調整前進方向','微風時施藥','設置隔離區','設置防護網','避免高溫時施藥','避免烈日下施藥','其他']},
+        {id:'storage', label:'妥善、安全貯存藥劑（可複選）', type:'checkbox',
+          options:['單獨貯放並加鎖','減少貯存量與貯存時間','貯存在安全、合適場所，避免交叉污染','包裝上有完整、牢固及清晰標籤','不隨意分裝藥劑','施用後徹底清洗施用器械','其他']},
+        {id:'waste_handling', label:'廢棄物處理（可複選）', type:'checkbox',
+          options:['妥善處理廢棄物及廢容器','其他']},
+        {id:'drone_operator', label:'合格代噴業者（如未使用植保機，請留白，可複選）', type:'checkbox',
+          hint:'以下3題是「植保機（如無人機）施用植物保護資材之措施」，沒有用植保機噴藥可以直接跳過這3題',
+          options:['登記在案之代噴業者（法人）','操作人員具農藥代噴技術人員證書（空中施作類別）','操作人員具遙控無人機專業操作證','其他']},
+        {id:'drone_approval', label:'施藥作業核准（如未使用植保機，請留白，可複選）', type:'checkbox',
+          options:['向民航局註冊之無人機','向民航局申請投擲或噴灑作業核准','向空域主管機關申請投擲或噴灑作業核准','作業前至民航局遙控無人機管理資訊系統辦理報到','作業後至民航局遙控無人機管理資訊系統辦理報離','作業結束後至無人機代噴登記管理平台填報施藥紀錄及上傳飛行軌跡','其他']},
+        {id:'flight_control', label:'飛行作業控管（如未使用植保機，請留白，可複選）', type:'checkbox',
+          options:['作業風速3m/sec以下','作業高度保持植冠上方4公尺以下','作業時應做好飄散防範措施','其他']},
         {id:'env_numbers', label:'具體數字（選填，越具體越好）', type:'textarea',
           hint:'例如：化學農藥用量減少約N公斤、用藥次數從X次降到Y次',
           evidenceHint:'友善資材購買證明、田間天敵照片、用藥前後對照的用量紀錄'}
@@ -565,7 +679,10 @@ var FORMS = {
   tech:{ groupName:'技術創新組', formName:'作物有害生物整合管理技術成果資料表（附件3）',
     note:'各欄請簡明扼要（1000字內），聚焦「參賽技術」，勿羅列團隊所有成果。',
     sections:[
-      COMMON_BASIC,
+      { title:'一、基本資料', fields: basicFields().concat([
+        {id:'coop', label:'若參賽技術與試驗改良場所、學研單位合作，請提供聯絡資訊', type:'radio', options:['否','是']},
+        {id:'coop_detail', label:'若「是」，合作單位名稱與聯絡人姓名', type:'text'}
+      ]) },
       { title:'二、參賽技術簡介', fields:[
         {id:'tech_name', label:'成果（技術）名稱', type:'text'},
         {id:'tech_type', label:'技術類型（可複選）', type:'checkbox', options:['新技術','新資材','新應用策略','其他']},
@@ -590,7 +707,10 @@ var FORMS = {
   promo:{ groupName:'行銷推廣組', formName:'作物有害生物整合管理行銷推廣成果資料表（附件4-1）',
     note:'各欄請簡明扼要（1000字內），並明確標示與IPM的關連性。',
     sections:[
-      COMMON_BASIC,
+      { title:'一、基本資料', fields: basicFields().concat([
+        {id:'coop', label:'若與試驗改良場所、學研單位合作推廣作物有害生物整合管理，請提供聯絡資訊', type:'radio', options:['否','是']},
+        {id:'coop_detail', label:'若「是」，合作單位名稱與聯絡人姓名', type:'text'}
+      ]) },
       { title:'二、行銷推廣成果簡介', fields:[
         {id:'intro', label:'參賽者簡介', type:'textarea', maxlen:500, noEvidence:true, hint:'主要業務項目，及與IPM行銷推廣的關連性（500字內）'},
         {id:'strategy', label:'主要推廣策略（至多3項）', type:'checkbox', options:['輔導培訓課程','田間現場示範','擔任輔導顧問','出版推廣文宣品','採購IPM農產品','行銷推廣IPM農產品','其他']},
@@ -1021,18 +1141,23 @@ function makeForm(){
     var hasPestlist=sec.fields.some(function(f){ return f.type==='pestlist'; });
     if(hasPestlist){
       var entries=getPestEntries(g);
-      h+='<table><tr><th>類別</th><th>害物名稱</th><th>發現／判斷方式</th><th>管理方法</th></tr>';
-      entries.forEach(function(e){
-        var detectStr=withDetails(e.detect, e.detectDetail).join('|');
-        var controlStr=withDetails(e.control, e.controlDetail).join('|');
-        h+='<tr><td>'+esc(e.category)+'</td><td>'+disp(e.name)+'</td><td>'+disp(detectStr)+'</td><td>'+disp(controlStr)+'</td></tr>';
+      entries.forEach(function(e,pIdx){
+        h+='<table style="margin-bottom:14px;"><tr><th colspan="2" style="background:var(--green-light);">害物 '+(pIdx+1)+'：'+esc(e.category)+'　'+esc(e.name||'（未填名稱）')+'</th></tr>';
+        var climateStr=withDetails(e.climate,e.climateDetail).join('|');
+        h+='<tr><th style="width:32%;">發生盛期</th><td>生長階段：'+disp(e.stage)+'<br>氣候條件：'+disp(climateStr)+'</td></tr>';
+        var transStr=withDetails(e.transmission,e.transmissionDetail).join('|');
+        h+='<tr><th>傳播途徑</th><td>'+disp(transStr)+'</td></tr>';
+        PEST_STRATEGY_GROUPS.forEach(function(sg){
+          var str=withDetails((e.strategies&&e.strategies[sg.key])||[], e.strategyDetails&&e.strategyDetails[sg.key]).join('|');
+          h+='<tr><th>'+esc(sg.label)+'</th><td>'+disp(str)+'</td></tr>';
+        });
         var pfiles=getEvidenceList(g,'pest_'+e.id), pnote=getEvidenceNote(g,'pest_'+e.id).trim();
         var pEv=[];
         if(pfiles.length) pEv.push('檔案：'+pfiles.map(function(x){return x.name;}).join('、'));
         if(pnote) pEv.push(pnote);
-        if(pEv.length) h+='<tr><td colspan="4" style="font-size:13px;color:#1b5e20;">待附證明：'+esc(pEv.join('；'))+evidenceImagesHtml(pfiles)+'</td></tr>';
+        if(pEv.length) h+='<tr><th>待附證明</th><td style="font-size:13px;color:#1b5e20;">'+esc(pEv.join('；'))+evidenceImagesHtml(pfiles)+'</td></tr>';
+        h+='</table>';
       });
-      h+='</table>';
     }
     var normalFields=sec.fields.filter(function(f){ return f.type!=='pestlist'; });
     if(normalFields.length){
