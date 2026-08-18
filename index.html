@@ -201,6 +201,7 @@
   </div>
   <div class="card no-print" id="pageBudgetCard" style="display:none;">
     <h3 style="margin-top:0;">投件前最後確認：佐證資料與頁數</h3>
+    <div id="evidenceCoverageBox"></div>
     <p class="hint">想想看要附哪些佐證資料，抓一下大概頁數，避免整份資料（含附件）超過50頁。調整後按下面按鈕，把最新頁數更新到上面的報名表。</p>
     <div id="pageBudgetBox"></div>
     <button class="bigbtn secondary" onclick="makeForm()">更新報名表的頁數提醒</button>
@@ -594,7 +595,9 @@ var FORMS = {
         {id:'summary', label:'IPM執行成果概述', type:'textarea', maxlen:500, noEvidence:true,
           hint:'請簡述您把IPM方法用在田間的重點與特色（500字內），並摘要說明主要量化成果，例如化學農藥使用風險減量、防治成本變化、產量或品質改善、示範推廣情形等。這裡先寫總覽就好，詳細佐證請放在下面各面向欄位'}
       ]},
-      { title:'四、人力知識（評分佔45分）', fields:[
+      { title:'四、人力知識（評分佔45分）',
+        warning:'請只勾選您實際做到、且能提供佐證的項目。評審會核對佐證資料，勾選了卻拿不出證明，比誠實少勾更容易被扣分或引起質疑。',
+        fields:[
         {id:'pest_entries', label:'害物與管理方式', type:'pestlist'},
         {id:'safety_gear', label:'安全防護措施（可複選）', type:'checkbox',
           options:['口鼻防護具','呼吸防護具','眼部防護具','手套','雨鞋','全套衣','未使用化學農藥','其他']},
@@ -610,7 +613,9 @@ var FORMS = {
           hint:'例如：發生時期、田間觀察到的細節、其他做法。上面勾選不夠寫的都可以補在這裡',
           evidenceHint:'防護裝備照片、藥罐標註作用機制的照片、農藥購買證明、水質或土壤檢驗報告'}
       ]},
-      { title:'五、社群組織（評分佔10分）', fields:[
+      { title:'五、社群組織（評分佔10分）',
+        warning:'一樣只勾選實際有做的項目，課程證書、會員證、活動照片等佐證盡量附上，勾選和佐證對得起來才有加分效果。',
+        fields:[
         {id:'ref_books', label:'書籍與參考資料：您參考過哪些資料？（可複選）', type:'checkbox',
           options:['作物營養需求','施肥手冊','病害發生與管理','蟲害發生與管理','雜草種類與防除','最新登記藥劑清單','農藥使用技術','作物栽培管理手冊','其他']},
         {id:'org_join', label:'農民組織：您有沒有參加這些組織？（可複選）', type:'checkbox',
@@ -628,7 +633,9 @@ var FORMS = {
           hint:'上面勾選或填寫不夠的都可以補在這裡',
           evidenceHint:'課程證書（請標註課程名稱與時數）、產銷班或協會會員證、活動合照、推廣活動照片或影片連結'}
       ]},
-      { title:'六、經濟效益（評分佔15分）', fields:[
+      { title:'六、經濟效益（評分佔15分）',
+        warning:'紀錄要真的留過才勾，成本、收益數字有憑證（單據、紀錄本）最有說服力。',
+        fields:[
         {id:'pest_loss_record', label:'有害生物經濟損害紀錄（可複選）', type:'checkbox',
           options:['評估與記錄有害生物造成的經濟損失','其他']},
         {id:'spray_record_items', label:'保存施藥紀錄：您的紀錄包含哪些項目？（可複選）', type:'checkbox',
@@ -643,7 +650,9 @@ var FORMS = {
           hint:'例如：農藥成本從每月X元降到Y元、用藥次數從N次降到M次',
           evidenceHint:'施藥或成本紀錄表、通路收入單據、成本明細（藥劑／器械／設施折舊）'}
       ]},
-      { title:'七、環境效益（評分佔30分）', fields:[
+      { title:'七、環境效益（評分佔30分）',
+        warning:'田區實際沒做到的作法不要勾，照片、購買證明、用量紀錄是最直接的佐證。',
+        fields:[
         {id:'env_reduction', label:'化學農藥減量情形（先講結果，可複選）', type:'checkbox',
           options:['用藥次數減少','用藥種類減少','改用免登記資材或生物製劑替代','完全不使用化學農藥','尚未減少']},
         {id:'beneficial_impact', label:'對有益生物影響：您考量了哪些？（可複選）', type:'checkbox',
@@ -852,6 +861,49 @@ function updatePageBudgetTotal(group){
   box.textContent=msg;
 }
 
+/* ---------- 佐證覆蓋度提醒：避免勾很多項目卻完全拿不出佐證 ---------- */
+var COVERAGE_EXCLUDE_VALUES=['未使用化學農藥','無','尚未減少','尚未看到明顯改變'];
+var COVERAGE_MIN_CHECKED=3; /* 勾選達到這個數字以上，才需要有佐證，避免小題大作 */
+function computeEvidenceCoverage(group){
+  var form=FORMS[group];
+  var results=[];
+  form.sections.forEach(function(sec){
+    if(!sec.warning) return; /* 只檢查有加誠實原則提醒的評分區塊（人力知識/社群組織/經濟效益/環境效益） */
+    var checkedCount=0, hasEvidence=false;
+    sec.fields.forEach(function(f){
+      if(f.type==='checkbox'){
+        var v=val(group,f.id);
+        if(v) checkedCount += v.split('|').filter(function(x){ return x && COVERAGE_EXCLUDE_VALUES.indexOf(x)===-1; }).length;
+      } else if(f.type==='pestlist'){
+        var entries=getPestEntries(group);
+        entries.forEach(function(e){
+          PEST_STRATEGY_GROUPS.forEach(function(sg){ checkedCount += ((e.strategies&&e.strategies[sg.key])||[]).length; });
+          checkedCount += (e.climate||[]).length + (e.transmission||[]).length;
+          var pf=getEvidenceList(group,'pest_'+e.id), pn=getEvidenceNote(group,'pest_'+e.id).trim();
+          if(pf.length || pn) hasEvidence=true;
+        });
+      }
+      if(f.type==='textarea' && !f.noEvidence){
+        var files=getEvidenceList(group,f.id), note=getEvidenceNote(group,f.id).trim();
+        if(files.length || note) hasEvidence=true;
+      }
+    });
+    results.push({title:sec.title, checkedCount:checkedCount, hasEvidence:hasEvidence});
+  });
+  return results;
+}
+function renderEvidenceCoverage(group,container){
+  container.innerHTML='';
+  var coverage=computeEvidenceCoverage(group);
+  var flagged=coverage.filter(function(c){ return c.checkedCount>=COVERAGE_MIN_CHECKED && !c.hasEvidence; });
+  if(flagged.length===0) return;
+  var box=document.createElement('div'); box.className='warn'; box.style.fontSize='15px';
+  var html='<b>佐證覆蓋度提醒：</b>以下面向勾選了不少項目，但目前完全沒有附上佐證（照片或文字說明），建議至少補一些具體證明，避免評審核對時發現對不上：';
+  flagged.forEach(function(c){ html+='<br>・'+esc(c.title)+'：勾選 '+c.checkedCount+' 項，佐證 0 項'; });
+  box.innerHTML=html;
+  container.appendChild(box);
+}
+
 /* ---------- 產生填寫表單 ---------- */
 function fkey(g,fid){ return 'ipmf_'+g+'_'+fid; }
 
@@ -1022,6 +1074,7 @@ function goForm(group){
   if(form.note){ var n=document.createElement('div'); n.className='info'; n.style.fontSize='16px'; n.textContent='填寫提醒：'+form.note; box.appendChild(n); }
   form.sections.forEach(function(sec){
     var h=document.createElement('div'); h.className='sec-title'; h.textContent=sec.title; box.appendChild(h);
+    if(sec.warning){ var sw=document.createElement('div'); sw.className='warn'; sw.style.fontSize='15px'; sw.textContent=sec.warning; box.appendChild(sw); }
     sec.fields.forEach(function(f){
       if(f.type==='pestlist'){ var c=document.createElement('div'); box.appendChild(c); renderPestSection(group,c); }
       else box.appendChild(renderField(group,f));
@@ -1198,6 +1251,7 @@ function makeForm(){
   h+='<p style="font-size:13px;color:#666;">提醒：報名資料以50頁為限（含佐證附件），A4、本文12級字以上，表格圖說不小於10級字，不得以縮小字級、壓縮行距或文字轉圖片等方式規避頁數限制。若使用AI生成文字或請專家協助撰寫，請於報名資料聲明（附件5-2）主動標示。本表為輔助草稿，正式投件請以官方公告的附件表格為準。</p>';
   document.getElementById('formOutput').innerHTML=h;
   document.getElementById('formResultCard').style.display='block';
+  renderEvidenceCoverage(g, document.getElementById('evidenceCoverageBox'));
   renderPageBudget(g, document.getElementById('pageBudgetBox'));
   document.getElementById('pageBudgetCard').style.display='block';
   document.getElementById('formResultCard').scrollIntoView({behavior:'smooth'});
