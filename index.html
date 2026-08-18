@@ -469,10 +469,9 @@ function renderPestSection(group,container){
   var entries=getPestEntries(group);
   if(entries.length===0){ entries=[newPestEntry('p0')]; setPestEntries(group,entries); }
   /* 相容舊版資料格式（detect/control 兩欄）：搬到新的 strategies.monitor，其餘管理方法請使用者在新欄位重新勾選 */
-  var migrated=false, hadLegacy=false;
+  var migrated=false;
   entries.forEach(function(entry){
     if(!entry.strategies){
-      hadLegacy = hadLegacy || (entry.detect&&entry.detect.length) || (entry.control&&entry.control.length);
       var fresh=newPestEntry(entry.id);
       entry.stage=entry.stage||''; entry.climate=entry.climate||[]; entry.climateDetail=entry.climateDetail||{};
       entry.transmission=entry.transmission||[]; entry.transmissionDetail=entry.transmissionDetail||{};
@@ -482,11 +481,6 @@ function renderPestSection(group,container){
     }
   });
   if(migrated) setPestEntries(group,entries);
-  if(hadLegacy){
-    var warnBox=document.createElement('div'); warnBox.className='warn'; warnBox.style.fontSize='15px';
-    warnBox.textContent='提醒：害物欄位改版了，「監測」已幫您保留，但「用了哪些方法管理」需要在下面重新對照分類勾選一次，抱歉造成不便。';
-    container.appendChild(warnBox);
-  }
   entries.forEach(function(entry,idx){
     var box=document.createElement('div');
     box.style.cssText='border:2px solid #b7d8bb; border-radius:12px; padding:14px; margin:12px 0; background:#fbfffb;';
