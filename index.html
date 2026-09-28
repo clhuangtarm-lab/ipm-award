@@ -878,8 +878,7 @@ var FORMS = {
       { title:'七、環境效益（評分佔30分）',
         warning:'田區實際沒做到的作法不要勾，照片、購買證明、用量紀錄是最直接的佐證。',
         fields:[
-        {id:'env_reduction', label:'化學農藥減量情形（小幫手附加題，官方附件2沒有這一題）', type:'checkbox', extra:true,
-          hint:'這題幫您先整理減量結果，官方表不用勾。可以把結果寫進下面「具體數字」。',
+        {id:'env_reduction', label:'化學農藥減量情形（先講結果，可複選）', type:'checkbox',
           options:['用藥次數減少','用藥種類減少','改用免登記資材或生物製劑替代','完全不使用化學農藥','尚未減少']},
         {id:'beneficial_impact', label:'對有益生物影響：您考量了哪些？（可複選）', type:'checkbox',
           hint:'請說明做法，或提供相關佐證資料',
@@ -1993,7 +1992,7 @@ function makeForm(){
           if(note) evParts.push(note);
           if(evParts.length) dv+='<br><span style="font-size:13px;color:#1b5e20;">待附證明：'+esc(evParts.join('；'))+'</span>'+evidenceImagesHtml(files);
         }
-        h+='<tr><th style="width:38%;">'+esc(f.label)+(f.extra?'<br><span style="font-size:12px;color:#888;font-weight:normal;">（官方表沒有這一題，投件時不用填）</span>':'')+'</th><td>'+dv+'</td></tr>';
+        h+='<tr><th style="width:38%;">'+esc(f.label)+'</th><td>'+dv+'</td></tr>';
       });
       h+='</table>';
     }
