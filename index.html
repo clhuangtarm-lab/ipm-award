@@ -93,8 +93,27 @@
   .doc .sign{margin-top:8px; padding:12px; border:1px dashed #888; border-radius:8px; background:#fcfcfc;}
   .deadline{ background:#c62828; color:#fff; text-align:center; padding:10px; font-size:18px; font-weight:bold; }
   footer{max-width:820px; margin:0 auto; padding:16px; font-size:14px; color:var(--gray); text-align:center;}
+  .err{ background:#ffebee; border-left:6px solid #c62828; color:#b71c1c;
+    padding:12px 14px; border-radius:8px; margin:12px 0; font-size:17px; }
+  td, th, .opts label{overflow-wrap:anywhere;}
+  .opts input[type=text]{max-width:100%; height:auto;}
+  /* 儲存失敗提示（固定在畫面最上方） */
+  #storageAlert{display:none; position:fixed; top:0; left:0; right:0; z-index:50;
+    padding:10px 14px; font-size:17px; font-weight:bold; text-align:center; color:#fff; background:#c62828;}
+  #storageAlert.soft{background:#e65100;}
+  #storageAlert button{font-family:inherit; font-size:16px; margin:4px 6px 0; padding:6px 12px; border-radius:8px; border:2px solid #fff; background:#fff; color:#c62828; cursor:pointer; font-weight:bold;}
+  #storageAlert.soft button{color:#e65100;}
+  .progress{top:var(--alert-h,0px);}
+  /* 影片 */
+  .video-block{margin:12px 0 18px;}
+  .video-block .vtitle{font-weight:bold; font-size:18px; margin-bottom:6px;}
+  .video-wrap{position:relative; width:100%; max-width:100%; padding-top:56.25%; background:#000; border-radius:10px; overflow:hidden;}
+  .video-wrap iframe{position:absolute; top:0; left:0; width:100%; height:100%; border:0;}
+  .video-link{font-size:16px; margin-top:4px;}
+  details.video-box{background:#fff; border:2px solid var(--green); border-radius:12px; padding:10px 14px; margin:12px 0;}
+  details.video-box summary{cursor:pointer; font-weight:bold; font-size:19px; color:var(--green-dark);}
   @media print{
-    header, .deadline, .no-print, footer, .backlink, .progress{display:none !important;}
+    header, .deadline, .no-print, footer, .backlink, .progress, #storageAlert, .video-block, details.video-box{display:none !important;}
     body{background:#fff; font-size:12pt;}
     .card{border:none; box-shadow:none; padding:0; margin:0;}
     .doc h3{-webkit-print-color-adjust:exact; print-color-adjust:exact;}
@@ -104,6 +123,7 @@
 </head>
 <body>
 
+<div id="storageAlert" class="no-print" role="alert"></div>
 <header>
   <h1>永續善農獎 IPM Award 報名小幫手</h1>
   <p>找到適合的組別，一步一步填出可投件的報名表</p>
@@ -151,6 +171,8 @@
     <div class="result-title" id="resultGroup"></div>
     <p id="resultDesc" style="font-size:18px;"></p>
     <div id="resultWarnings"></div>
+    <div id="resultReminders"></div>
+    <div id="resultVideo" class="no-print"></div>
     <div class="warn" style="font-size:16px;">以上為初步建議。<b>最終參賽資格與分組，由主辦單位及評審委員認定</b>。</div>
     <button class="bigbtn" onclick="goForm(currentGroup)">下一步：開始填報名表</button>
     <button class="bigbtn secondary" onclick="startQuiz()">重新做一次測驗</button>
@@ -187,13 +209,14 @@
     <div style="margin:10px 0;">
       <button class="bigbtn secondary" onclick="exportBackup()" style="display:inline-block; width:auto; margin-right:10px; padding:12px 20px;">匯出備份</button>
       <button class="bigbtn secondary" onclick="document.getElementById('importFile').click()" style="display:inline-block; width:auto; padding:12px 20px;">匯入備份</button>
-      <input type="file" id="importFile" accept="application/json" style="display:none;" onchange="importBackupFile(this)">
+      <input type="file" id="importFile" accept=".json,application/json,text/plain" style="display:none;" onchange="importBackupFile(this)">
     </div>
     <div id="formFields"></div>
     <button class="bigbtn" onclick="makeForm()">產生報名表</button>
   </div>
   <div class="card" id="formResultCard" style="display:none;">
     <div class="warn no-print">下面是依您填寫內容排好的報名表。可以<b>列印</b>或存成 PDF 拿去投件；有簽名、蓋章、附件的地方請印出後補上。正式投件請對照主辦單位公告的官方表格。</div>
+    <div id="precheckBox" class="no-print"></div>
     <div id="formOutput" class="doc"></div>
     <button class="bigbtn no-print" onclick="printForm()">列印 / 存成 PDF</button>
     <button class="bigbtn secondary no-print" onclick="copyForm()">複製全部文字</button>
@@ -230,11 +253,20 @@
       <li>報名資料<b>以50頁為限（含佐證附件）</b>，A4、本文12級字以上；表格、圖說不小於10級字，不得以縮小字級、壓縮行距或文字轉圖片等方式規避頁數限制。</li>
       <li>若使用<b>AI生成文字</b>，或請植物醫學專家、其助理、植物診療師<b>協助撰寫</b>，請主動在報名資料標示（報名資料聲明，附件5-2）。</li>
       <li>曾獲獎者再報同一組，須提出<b>具體新增成果與差異化內容</b>，由評審委員認定資格。</li>
+      <li>現場操作組：參賽者要<b>合法使用土地、設備（施）及經營農業</b>。</li>
       <li>現場操作組：得獎者及入圍者的參賽農產品會安排<b>當期農藥殘留檢驗</b>，不符合國家檢驗規定者取消資格。</li>
-      <li>各組前3名得獎者，獲獎後2年內須擔任<b>農業親善大使</b>（同意書於報名時繳交，附件5-1）。</li>
-      <li>各組前3名分別頒發獎金新台幣<b>10萬元</b>（代扣所得稅10%後匯款）；技術創新組公教人員報名獲選另依「農業發展有功人員獎勵辦法」核發獎勵。</li>
+      <li>各組前3名得獎者，獲獎後2年內須擔任<b>農業親善大使</b>。</li>
+      <li>行銷推廣組：得獎者在獲獎後2年內，要辦<b>至少2場IPM行銷推廣活動</b>，辦之前要先通知承辦單位。</li>
+      <li><b>報名時就要繳</b>官方「附件5-1 二年內擔任農業親善大使同意書」和「附件5-2 報名資料聲明」。請到<a href="https://ipm-award.mystrikingly.com/" target="_blank" rel="noopener">活動網站</a>下載官方檔，印出來簽名（法人或團體寫上代表人並用印）。線上報名的人掃描後上傳，郵寄的人附紙本。</li>
+      <li>各組前3名分別頒發獎金新台幣<b>10萬元整</b>（代扣所得稅10%後匯款）。</li>
+      <li>技術創新組公教人員：依評選辦法原文，「依『農業發展有功人員獎勵辦法』，若公教人員團體報名技術創新組獲選，頒發獎金新台幣10萬元整；若公教人員個人報名技術創新組獲選，頒發獎金5萬元並得優先申請2年期計畫經費補助（上限以每年100萬元為限，計畫申請審核須依照相關規定）。」</li>
       <li>推薦函（附件9）非必繳，但屬有利參考資料：可洽各試驗改良場所、學研單位、農會或縣市政府輔導人員。</li>
     </ul>
+  </div>
+  <div class="card no-print">
+    <h2 style="margin-top:0;">徵件說明影片：報名表怎麼寫</h2>
+    <p class="hint">三組各有一支影片。LINE 裡面播不出來的話，按影片下面的「在 YouTube 開啟」。</p>
+    <div id="tipsVideos"></div>
   </div>
   <div class="card">
     <h2 style="margin-top:0;">需要人幫忙嗎？</h2>
@@ -249,16 +281,82 @@
 </main>
 
 <footer>
-  填寫內容只儲存在您自己的裝置，不會上傳。
+  填寫內容只儲存在您自己的裝置，不會上傳。<br>
+  最後更新：2026-09-28
 </footer>
 
 <script>
 "use strict";
 
-/* ---------- 安全存取 localStorage（沙盒/無痕降級記憶體）---------- */
+/* ---------- 安全存取 localStorage ----------
+   寫入失敗時先放在記憶體 _mem；讀取時先看 _mem，才不會重畫後變回舊內容。
+   失敗分兩種：沙盒／無痕（整個不能存）與儲存空間滿了，各提示一次。 */
 var _mem = {};
-function lsGet(k){ try{ return localStorage.getItem(k); }catch(e){ return (k in _mem) ? _mem[k] : null; } }
-function lsSet(k,v){ try{ localStorage.setItem(k,v); }catch(e){ _mem[k] = v; } }
+var _storageNotice = {quota:false, sandbox:false};
+function hasOwn(o,k){ return Object.prototype.hasOwnProperty.call(o,k); }
+function lsGet(k){
+  if(hasOwn(_mem,k)) return _mem[k];
+  try{ return localStorage.getItem(k); }catch(e){ return null; }
+}
+function lsSet(k,v){
+  try{
+    localStorage.setItem(k,v);
+    if(hasOwn(_mem,k)) delete _mem[k];
+    return true;
+  }catch(e){
+    _mem[k] = v;
+    storageFailed(storageIsSandboxed() ? 'sandbox' : 'quota');
+    return false;
+  }
+}
+function lsRemove(k){
+  if(hasOwn(_mem,k)) delete _mem[k];
+  try{ localStorage.removeItem(k); }catch(e){}
+}
+/* 列出某個前綴的所有 key（localStorage＋記憶體） */
+function lsKeys(prefix){
+  var seen={}, out=[];
+  try{
+    for(var i=0;i<localStorage.length;i++){
+      var k=localStorage.key(i);
+      if(k && k.indexOf(prefix)===0 && !seen[k]){ seen[k]=1; out.push(k); }
+    }
+  }catch(e){}
+  Object.keys(_mem).forEach(function(k){ if(k.indexOf(prefix)===0 && !seen[k]){ seen[k]=1; out.push(k); } });
+  return out;
+}
+/* 沙盒：一碰 localStorage 就出錯；無痕（舊版 Safari）：可以讀但裡面空的、也寫不進去 */
+function storageIsSandboxed(){
+  try{ return localStorage.length===0; }catch(e){ return true; }
+}
+function storageFailed(kind){
+  if(_storageNotice[kind]) return;
+  _storageNotice[kind]=true;
+  if(typeof document==='undefined' || !document.getElementById) return;
+  var box=document.getElementById('storageAlert'); if(!box) return;
+  box.innerHTML='';
+  var msg=document.createElement('div');
+  if(kind==='quota'){
+    box.className='';
+    msg.textContent='這台裝置的儲存空間滿了，剛填的內容還沒存好，請立刻按『匯出備份』';
+  } else {
+    box.className='soft';
+    msg.textContent='這個瀏覽器（無痕模式或內嵌視窗）不能把內容存起來，關掉頁面就會不見。填完請按『匯出備份』。';
+  }
+  box.appendChild(msg);
+  var b=document.createElement('button'); b.type='button'; b.textContent='匯出備份';
+  b.onclick=function(){ exportBackup(); };
+  box.appendChild(b);
+  if(kind!=='quota'){
+    var c=document.createElement('button'); c.type='button'; c.textContent='知道了';
+    c.onclick=function(){ box.style.display='none'; document.documentElement.style.setProperty('--alert-h','0px'); document.body.style.paddingTop=''; };
+    box.appendChild(c);
+  }
+  box.style.display='block';
+  var h=box.offsetHeight||0;
+  document.body.style.paddingTop=h+'px';
+  document.documentElement.style.setProperty('--alert-h', h+'px');
+}
 
 function showScreen(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
@@ -271,9 +369,51 @@ var GROUPS = {
   field:{ name:'現場操作組',
     desc:'給實際從事農業生產、把IPM用在田間管理的農民或團體。評審會到田間實地查核。' },
   tech:{ name:'技術創新組',
-    desc:'給研發IPM新技術、新資材、新應用策略，並已移轉、推廣出去的個人或團體。第2階段須簡報並提供3至5處應用場域。' },
+    desc:'給從事IPM研究發展的個人或團體。報名以技術研究創新（新技術、新資材、新應用策略等）改善或解決產業問題的事蹟為主。不一定要已經技轉，研發出來、有實際應用或推廣潛力就可以報。第2階段要簡報，實地審查原則上要提供3至5處應用場域。' },
   promo:{ name:'行銷推廣組',
-    desc:'給從事IPM推廣、輔導、教育、行銷或採購IPM產品的個人或團體。近2年須有實績。' }
+    desc:'給從事IPM推廣、輔導、教育、行銷或採購IPM產品的個人或團體。113年8月1日至115年7月31日之間，要有辦過IPM行銷或推廣活動的實績。' }
+};
+
+/* ---------- 三組徵件說明影片（YouTube）---------- */
+var VIDEOS = {
+  field:{ id:'wOPxXXAzD9E', title:'現場操作組 徵件說明影片' },
+  tech:{ id:'ZE4Q8Z_izxQ', title:'技術創新組 徵件說明影片' },
+  promo:{ id:'AXfC7e9pnzM', title:'行銷推廣組 徵件說明影片' }
+};
+function videoBlock(group, heading){
+  var v=VIDEOS[group]; if(!v) return null;
+  var wrap=document.createElement('div'); wrap.className='video-block no-print';
+  if(heading){ var t=document.createElement('div'); t.className='vtitle'; t.textContent=heading; wrap.appendChild(t); }
+  var box=document.createElement('div'); box.className='video-wrap';
+  var f=document.createElement('iframe');
+  f.src='https://www.youtube-nocookie.com/embed/'+v.id;
+  f.title=v.title;
+  f.setAttribute('loading','lazy');
+  f.setAttribute('allowfullscreen','');
+  f.setAttribute('allow','accelerometer; encrypted-media; gyroscope; picture-in-picture; fullscreen');
+  f.setAttribute('referrerpolicy','strict-origin-when-cross-origin');
+  box.appendChild(f); wrap.appendChild(box);
+  var p=document.createElement('div'); p.className='video-link';
+  var a=document.createElement('a'); a.href='https://youtu.be/'+v.id; a.target='_blank'; a.rel='noopener';
+  a.textContent='在 YouTube 開啟';
+  p.appendChild(a); wrap.appendChild(p);
+  return wrap;
+}
+/* 分組結果頁要提醒的事（依評選辦法） */
+var GROUP_REMINDERS = {
+  field:[
+    '資格：要合法使用土地、設備（施）及經營農業。',
+    '前3名得獎者，獲獎後2年內要擔任農業親善大使。',
+    '得獎者和入圍者的參賽農產品，會安排當期農藥殘留檢驗。'
+  ],
+  tech:[
+    '前3名得獎者，獲獎後2年內要擔任農業親善大使。',
+    '第2階段實地審查，原則上要提供3至5處應用場域和聯絡資訊；只有1處的話，要說明原因和代表性。'
+  ],
+  promo:[
+    '前3名得獎者，獲獎後2年內要擔任農業親善大使。',
+    '得獎者在獲獎後2年內，要辦至少2場IPM行銷推廣活動，辦之前要先通知承辦單位。'
+  ]
 };
 
 /* ---------- 分組測驗 ---------- */
@@ -315,32 +455,37 @@ var QUIZ = {
     opts:[ {label:'我是實際種田、生產的農民或農場（以經營自己的田為主）', next:'techGate2farmer'},
       {label:'我是研發單位、學校、改良場，或以技術開發、產品推廣為主業的團隊或公司', next:'techGate2rnd'} ] },
   techGate2farmer:{ num:'第 3 題', text:'您研發的做法或工具，目前是什麼狀態？',
-    hint:'技術創新組看的是「別人也能直接拿去用」的技術，第2階段還要提供3至5處應用場域。',
+    hint:'技術創新組不一定要已經技轉。研發了新技術、新資材或新方法，有實際應用或推廣潛力就可以報。第2階段實地審查原則上要提供3至5處應用場域。',
     opts:[ {label:'已經有其他農民或單位在用，或已技轉、授權、申請專利、做成產品', next:'techBoth'},
-      {label:'目前主要用在自己的田，還沒移轉給別人', next:'f1', set:'field',
-        warn:'您的做法用在自己的田、還沒移轉給別人，比較適合「現場操作組」。田間的創意做法在現場操作組一樣是加分亮點——第四屆得獎農友李昆桓自己研發「蜂球投放機」裝在中耕機上，就是以現場操作組獲獎。技術創新組看的是「別人也能用、可移轉的技術」，並要提供3至5處應用場域。以下改用現場操作組繼續。'} ] },
+      {label:'還沒給別人用，但別人也能照著用，有推廣潛力', next:'techBoth'},
+      {label:'主要是我自己田裡的管理巧思，別人不太能直接拿去用', next:'f1', set:'field',
+        warn:'您的做法主要是自己田裡的管理巧思，比較適合「現場操作組」。田間的創意做法在現場操作組一樣是加分亮點——第四屆得獎農友李昆桓自己研發「蜂球投放機」裝在中耕機上，就是以現場操作組獲獎。以下改用現場操作組繼續。'} ] },
   techGate2rnd:{ num:'第 3 題', text:'您的技術目前是什麼狀態？',
-    hint:'技術創新組報名應以「已有應用成果的技術研究創新」為主。',
-    opts:[ {label:'已有實際應用成果，且已技轉、授權、專利或供他人採用', next:'last', set:'tech'},
-      {label:'技術還在研究中，尚無應用實績', next:'last', set:'tech', warn:'報名應以已有的創新事蹟為主，且第2階段實地審查須提供3至5處應用場域。若應用實績還不足，可考慮下一屆再報，或先洽主辦單位。'} ] },
+    hint:'評選辦法：報名應以技術研究創新（包含新技術、新資材、新應用策略等），改善或解決產業問題等事蹟為主。不一定要已經技轉。',
+    opts:[ {label:'已經有人在用，或已技轉、授權、申請專利', next:'last', set:'tech'},
+      {label:'還沒技轉，但已經有田間試驗、示範或實際應用的成果', next:'last', set:'tech'},
+      {label:'技術還在研究中，還沒有任何田間應用', next:'last', set:'tech', warn:'報名以已有的創新事蹟為主。第2階段實地審查原則上要提供3至5處應用場域（只有1處要說明原因和代表性）。如果還沒有任何田間應用，建議先洽主辦單位。'} ] },
   techBoth:{ num:'提醒', text:'您的情況兩組都可能適合',
-    hint:'您是實際生產者，技術也已移轉給別人。現場操作組與技術創新組可能都適合，建議洽主辦單位確認以哪一組報名最有利。您想先看哪一組？',
+    hint:'您是實際生產者，研發的做法別人也能用。現場操作組與技術創新組可能都適合，建議洽主辦單位確認以哪一組報名最有利。您想先看哪一組？',
     opts:[ {label:'先填技術創新組報名表', next:'last', set:'tech'},
       {label:'先填現場操作組報名表', next:'f1', set:'field'},
       {label:'直接聯絡主辦單位', next:'contact'} ] },
-  p1:{ num:'第 2 題', text:'公告日起往前2年內，您有辦理過IPM行銷或推廣活動的實績嗎？',
-    hint:'例如：推廣活動、輔導培訓課程、田間示範、擔任防治顧問、出版品文宣、採購或行銷IPM農產品。',
+  p1:{ num:'第 2 題', text:'113年8月1日至115年7月31日之間，您有辦過IPM行銷或推廣活動嗎？',
+    hint:'這是評選辦法說的「公告日起前2年」。例如：推廣活動、輔導培訓課程、田間示範、擔任防治顧問、出版品文宣、採購或行銷IPM農產品。',
     opts:[ {label:'有', next:'last'},
-      {label:'沒有或不滿2年內', next:'last', warn:'行銷推廣組要求「公告日起前2年具有辦理IPM行銷或推廣活動之實績」。若實績不在近2年內，請先洽主辦單位確認資格。'} ] },
+      {label:'沒有，或活動不在這段期間', next:'last', warn:'行銷推廣組要求「公告日起前2年（113年8月1日至115年7月31日）具有辦理作物有害生物整合管理行銷或推廣活動之實績」。實績不在這段期間的話，請先洽主辦單位確認資格。'} ] },
   last:{ num:'最後一題', text:'您以前得過永續善農獎（同一組）嗎？', hint:'',
     opts:[ {label:'沒有，第一次報名或未曾得獎', next:'RESULT'},
       {label:'有，我是曾經的得獎者', next:'RESULT', warn:'曾獲獎者再報同一組，須提出具體「新增成果、差異化內容、創新性或突破性」，由評審委員認定參賽資格。報名資料請聚焦得獎後的新事蹟。'} ] }
 };
 
-var currentGroup = null, quizWarnings = [], quizHistory = [];
-function startQuiz(){ currentGroup=null; quizWarnings=[]; quizHistory=[]; renderQ('q1'); showScreen('scr-quiz'); }
+/* 答題歷程：每答一題記一筆 {題目, 這一步的警告, 答題前的組別}。
+   回上一題就把最後一筆拿掉，警告跟著消失；結果頁只顯示目前這條路徑上的警告。 */
+var currentGroup = null, quizPath = [], currentQ = null;
+function startQuiz(){ currentGroup=null; quizPath=[]; renderQ('q1'); showScreen('scr-quiz'); }
+function quizWarningsNow(){ return quizPath.filter(function(s){ return s.warn; }).map(function(s){ return s.warn; }); }
 function renderQ(key){
-  var q=QUIZ[key]; quizHistory.push(key);
+  var q=QUIZ[key]; currentQ=key;
   document.getElementById('qnum').textContent=q.num;
   document.getElementById('qtext').textContent=q.text;
   document.getElementById('qhint').textContent=q.hint||'';
@@ -348,147 +493,177 @@ function renderQ(key){
   q.opts.forEach(function(o){
     var b=document.createElement('button'); b.className='optbtn'; b.textContent=o.label;
     b.onclick=function(){
+      if(o.next==='HOME'){ showScreen('scr-home'); return; }
+      quizPath.push({key:key, warn:o.warn||null, groupBefore:currentGroup});
       if(o.set) currentGroup=o.set;
-      if(o.warn) quizWarnings.push(o.warn);
       if(o.next==='RESULT') showResult();
-      else if(o.next==='HOME') showScreen('scr-home');
       else renderQ(o.next);
     };
     box.appendChild(b);
   });
 }
-function quizBack(){ quizHistory.pop(); var prev=quizHistory.pop(); if(prev) renderQ(prev); else showScreen('scr-home'); }
+function quizBack(){
+  var last=quizPath.pop();
+  if(!last){ showScreen('scr-home'); return; }
+  currentGroup=last.groupBefore;
+  renderQ(last.key);
+}
 function showResult(){
   var g=GROUPS[currentGroup]; if(!g){ showScreen('scr-home'); return; }
   document.getElementById('resultGroup').textContent=g.name;
   document.getElementById('resultDesc').textContent=g.desc;
   var wbox=document.getElementById('resultWarnings'); wbox.innerHTML='';
-  quizWarnings.forEach(function(w){ var d=document.createElement('div'); d.className='warn'; d.textContent='注意：'+w; wbox.appendChild(d); });
+  quizWarningsNow().forEach(function(w){ var d=document.createElement('div'); d.className='warn'; d.textContent='注意：'+w; wbox.appendChild(d); });
+  var rbox=document.getElementById('resultReminders'); rbox.innerHTML='';
+  var list=GROUP_REMINDERS[currentGroup]||[];
+  if(list.length){
+    var info=document.createElement('div'); info.className='info';
+    var t=document.createElement('b'); t.textContent='報名前要先知道：'; info.appendChild(t);
+    var ul=document.createElement('ul'); ul.style.margin='6px 0 0';
+    list.forEach(function(s){ var li=document.createElement('li'); li.textContent=s; ul.appendChild(li); });
+    info.appendChild(ul); rbox.appendChild(info);
+  }
+  var vbox=document.getElementById('resultVideo'); vbox.innerHTML='';
+  var vb=videoBlock(currentGroup,'先看影片：報名表怎麼寫'); if(vb) vbox.appendChild(vb);
   showScreen('scr-result');
 }
 
-/* ---------- 害物清單元件：對齊官方附件2「害物種類×IPM策略」大表，不同類別害物給對應選項 ---------- */
-/* 官方欄位：發生盛期、傳播途徑、耕作管理、物理干預、監測、天敵昆蟲、微生物製劑、免登資材、化學防治、其他 */
+/* ---------- 害物清單元件：一欄一欄對齊官方附件2「害物種類×IPM策略」大表 ---------- */
+/* 官方欄序：害物種類｜發生盛期（生長階段＋氣候條件）｜傳播途徑｜
+   IPM策略〔預防：耕作管理、物理干預｜監測｜防治：天敵昆蟲、微生物製劑、免登資材、化學防治、其他〕
+   官方表每一列的選項都一樣，所以病害／蟲害／草害／其他四類都顯示同一組官方選項，類別只當標籤。
+   選項文字逐字照官方表，不要改。 */
+var LEGACY_MARK='（舊版勾選，請確認）';
+var PEST_CATEGORIES=['病害','蟲害','草害','其他'];
 var PEST_CLIMATE_OPTIONS=['高溫期','高溼期','陰濕期','乾旱期','風力強','日夜溫差大','其他'];
 var PEST_TRANSMISSION_OPTIONS=['風、雨水','昆蟲','機械','人、動物','其他'];
-var PEST_STRATEGY_GROUPS=[
-  {key:'monitor', label:'監測（您怎麼發現、觀察害物動態）'},
-  {key:'cultivation', label:'耕作管理'},
-  {key:'physical', label:'物理干預'},
-  {key:'beneficial', label:'天敵昆蟲'},
-  {key:'microbial', label:'微生物製劑'},
-  {key:'other_methods', label:'免登資材與化學防治'}
+var PEST_COLUMNS=[
+  {key:'cultivation', type:'check', label:'耕作管理（預防）',
+    options:['耐病品種','健康的種苗(子)','田間衛生','土壤消毒','合理施肥','改善排水','改善通風','輪作','移除殘株','雜草管理','採收後移除殘株','其他']},
+  {key:'physical', type:'check', label:'物理干預（預防）',
+    options:['套袋','鋪設覆蓋物','有色黏紙','燈光誘引','設施/網室','防蟲網','人工捕殺','其他']},
+  {key:'monitor', type:'check', label:'監測',
+    options:['有色黏紙','性費洛蒙誘引劑','交配干擾劑','誘蟲器','其他']},
+  {key:'beneficial', type:'text', label:'天敵昆蟲（防治）', prompt:'請說明：'},
+  {key:'microbial', type:'check', label:'微生物製劑（防治）',
+    options:['蘇力菌','液化澱粉芽孢桿菌','木黴菌','枯草桿菌','白殭菌','其他']},
+  {key:'nonreg', type:'text', label:'免登資材（防治）', prompt:'請說明名稱及施用方式(次數、用量)：'},
+  {key:'chemical', type:'text', label:'化學防治', prompt:'請說明名稱及施用方式(次數、用量)：'},
+  {key:'other', type:'text', label:'其他（防治）', prompt:'請說明：'}
 ];
-var PEST_CATEGORY_OPTIONS = {
-  '病害':{
-    monitor:['定期巡田觀察','症狀比對或請專家鑑定','參考氣象資料（高溫多濕期等）研判','其他'],
-    cultivation:['耐病品種','健康的種苗(子)','田間衛生（清除病葉病果）','輪作','改善通風或排水','土壤消毒','合理施肥','移除殘株','其他'],
-    physical:['套袋或覆蓋物','移除病株','其他'],
-    beneficial:['其他（病害較少使用天敵防治，若有特殊做法請說明）'],
-    microbial:['木黴菌','枯草桿菌','液化澱粉芽孢桿菌','其他'],
-    other_methods:['免登記植物保護資材','化學農藥（必要時）','其他']
-  },
-  '蟲害':{
-    monitor:['定期巡田觀察','黃色或藍色黏紙監測','費洛蒙誘捕器監測','請專家鑑定','其他'],
-    cultivation:['田間衛生','改善通風或排水','輪作','移除殘株','雜草管理','其他'],
-    physical:['黏紙誘捕','燈光誘引','防蟲網或設施','套袋或覆蓋物','人工捕殺','其他'],
-    beneficial:['天敵昆蟲（如瓢蟲、草蛉、寄生蜂等）','性費洛蒙／交配干擾劑','誘蟲器','其他'],
-    microbial:['蘇力菌','白殭菌','其他'],
-    other_methods:['免登記植物保護資材','化學農藥（必要時）','其他']
-  },
-  '草害':{
-    monitor:['定期巡田觀察','其他'],
-    cultivation:['輪作','雜草管理','採收後移除殘株','其他'],
-    physical:['覆蓋物（如黑布、稻殼）','人工或機械除草','其他'],
-    beneficial:['其他（草害較不適用，若有特殊做法請說明）'],
-    microbial:['其他（草害較不適用，若有特殊做法請說明）'],
-    other_methods:['化學除草劑（必要時）','其他']
-  },
-  '其他':{
-    monitor:['定期巡田觀察','請專家鑑定','其他'],
-    cultivation:['耕作管理調整','其他'],
-    physical:['物理防治','其他'],
-    beneficial:['生物防治','其他'],
-    microbial:['其他'],
-    other_methods:['免登記植物保護資材','化學農藥（必要時）','其他']
-  }
+/* 文字欄的範例，依類別換（只是提示字，不會存進資料） */
+var PEST_TEXT_EXAMPLES={
+  '病害':{ beneficial:'病害通常不用天敵，沒有用就留白', nonreg:'例如：資材名稱，發病初期開始用，每次用量OO，一季OO次', chemical:'例如：藥劑名稱，稀釋OO倍，每次用量OO，一季OO次', other:'例如：其他防治做法' },
+  '蟲害':{ beneficial:'例如：放哪一種天敵、放多少、多久放一次', nonreg:'例如：資材名稱，每次用量OO，一季OO次', chemical:'例如：藥劑名稱，稀釋OO倍，每次用量OO，一季OO次', other:'例如：其他防治做法' },
+  '草害':{ beneficial:'草害通常不用天敵，沒有用就留白', nonreg:'例如：資材名稱，每次用量OO，一季OO次', chemical:'例如：除草劑名稱，每次用量OO，一季OO次', other:'例如：其他除草做法' },
+  '其他':{ beneficial:'例如：用了哪種天敵、怎麼放', nonreg:'例如：資材名稱，每次用量OO，一季OO次', chemical:'例如：藥劑名稱，每次用量OO，一季OO次', other:'例如：其他防治做法' }
 };
+var PEST_NAME_EXAMPLES={'病害':'例如：灰黴病、炭疽病','蟲害':'例如：東方果實蠅、斜紋夜盜蛾','草害':'例如：馬齒莧、牛筋草','其他':'例如：福壽螺、鳥害'};
+function isOtherOpt(op){ return typeof op==='string' && op.indexOf('其他')===0; }
+function hasLegacy(s){ return typeof s==='string' && s.indexOf(LEGACY_MARK)>-1; }
+function isPlainObj(o){ return !!o && typeof o==='object' && !Array.isArray(o); }
 function getPestEntries(group){
   var raw=lsGet(fkey(group,'pest_entries'));
-  try{ var arr=raw?JSON.parse(raw):[]; return Array.isArray(arr)?arr:[]; }catch(e){ return []; }
+  try{
+    var arr=raw?JSON.parse(raw):[];
+    return Array.isArray(arr) ? arr.filter(isPlainObj) : [];
+  }catch(e){ return []; }
 }
 function setPestEntries(group,arr){ lsSet(fkey(group,'pest_entries'), JSON.stringify(arr)); }
-/* detailTriggers: {選項文字: 填空框的placeholder}。凡在此清單的選項，勾選後會多跳出一個文字框（例如「其他」要說明、「化學農藥」要填藥名） */
-function renderPestCheckGroup(label,options,selectedArr,onChange,detailTriggers,selectedDetails,onDetailChange){
+function newPestEntry(id){
+  var strategies={}, strategyDetails={}, texts={};
+  PEST_COLUMNS.forEach(function(c){
+    if(c.type==='check'){ strategies[c.key]=[]; strategyDetails[c.key]={}; }
+    else texts[c.key]='';
+  });
+  return {id:id, category:'蟲害', name:'',
+    stage:'', climate:[], climateDetail:{},
+    transmission:[], transmissionDetail:{},
+    strategies:strategies, strategyDetails:strategyDetails, texts:texts, schema:2};
+}
+/* 補齊新版欄位（只補空的，不刪任何東西） */
+function normalizePestEntry(e){
+  if(!isPlainObj(e.strategies)) e.strategies={};
+  if(!isPlainObj(e.strategyDetails)) e.strategyDetails={};
+  if(!isPlainObj(e.texts)) e.texts={};
+  PEST_COLUMNS.forEach(function(c){
+    if(c.type==='check'){
+      if(!Array.isArray(e.strategies[c.key])) e.strategies[c.key]=[];
+      if(!isPlainObj(e.strategyDetails[c.key])) e.strategyDetails[c.key]={};
+    } else if(typeof e.texts[c.key]!=='string') e.texts[c.key]='';
+  });
+  if(!Array.isArray(e.climate)) e.climate=[];
+  if(!isPlainObj(e.climateDetail)) e.climateDetail={};
+  if(!Array.isArray(e.transmission)) e.transmission=[];
+  if(!isPlainObj(e.transmissionDetail)) e.transmissionDetail={};
+  if(typeof e.category!=='string' || !e.category) e.category='蟲害';
+  return e;
+}
+var DETAIL_INPUT_CSS='width:230px; max-width:100%; margin-left:6px; padding:6px; font-size:16px; border:1px solid var(--line); border-radius:6px;';
+var LEGACY_HINT='「其他」說明裡有舊版勾選搬過來的內容。屬實的話，請勾「其他」並把說明改成實際做法；不屬實就把那段文字刪掉。';
+/* 勾選欄：凡是「其他」開頭的選項，勾了就跳出說明框；說明框裡有舊版待確認文字時，沒勾也會顯示 */
+function renderPestCheckGroup(label,options,selectedArr,onChange,selectedDetails,onDetailChange){
   var wrap=document.createElement('div'); wrap.className='field';
   var lab=document.createElement('label'); lab.className='q'; lab.style.fontSize='16px'; lab.textContent=label; wrap.appendChild(lab);
   var opts=document.createElement('div'); opts.className='opts';
   selectedDetails=selectedDetails||{};
+  var anyLegacy=false;
   options.forEach(function(op){
     var l=document.createElement('label');
     var i=document.createElement('input'); i.type='checkbox'; i.value=op;
     if(selectedArr && selectedArr.indexOf(op)>-1) i.checked=true;
-    var placeholder=detailTriggers && detailTriggers[op];
-    var detailInput;
-    if(placeholder){
-      detailInput=document.createElement('input'); detailInput.type='text'; detailInput.placeholder=placeholder;
-      detailInput.style.cssText='width:230px; margin-left:6px; padding:6px; font-size:16px; border:1px solid var(--line); border-radius:6px; display:'+(i.checked?'inline-block':'none')+';';
-      detailInput.value=selectedDetails[op]||'';
+    var detailInput=null;
+    if(isOtherOpt(op)){
+      var cur=selectedDetails[op]||'';
+      if(hasLegacy(cur)) anyLegacy=true;
+      detailInput=document.createElement('input'); detailInput.type='text'; detailInput.placeholder='請說明';
+      detailInput.style.cssText=DETAIL_INPUT_CSS+' display:'+((i.checked||hasLegacy(cur))?'inline-block':'none')+';';
+      detailInput.value=cur;
       detailInput.oninput=function(){ onDetailChange(op, detailInput.value.replace(/\|/g,'、')); };
     }
     i.onchange=function(){
-      var chosen=[]; opts.querySelectorAll('input:checked').forEach(function(x){chosen.push(x.value);});
+      var chosen=[]; opts.querySelectorAll('input[type=checkbox]:checked').forEach(function(x){chosen.push(x.value);});
       onChange(chosen);
-      if(detailInput) detailInput.style.display = i.checked ? 'inline-block' : 'none';
+      if(detailInput) detailInput.style.display = (i.checked||hasLegacy(detailInput.value)) ? 'inline-block' : 'none';
     };
     l.appendChild(i); l.appendChild(document.createTextNode(' '+op)); opts.appendChild(l);
     if(detailInput) opts.appendChild(detailInput);
   });
   wrap.appendChild(opts);
+  if(anyLegacy){ var lh=document.createElement('div'); lh.className='warn'; lh.style.fontSize='15px'; lh.textContent=LEGACY_HINT; wrap.appendChild(lh); }
   return wrap;
 }
-var PEST_GENERIC_TRIGGERS={'其他':'請說明'};
-var PEST_OTHER_METHODS_TRIGGERS={
-  '其他':'請說明',
-  '化學農藥（必要時）':'請填藥劑名稱、使用量或次數等（選填）',
-  '化學除草劑（必要時）':'請填藥劑名稱、使用量或次數等（選填）',
-  '免登記植物保護資材':'請填資材名稱及施用方式（選填）'
-};
-function newPestEntry(id){
-  var strategies={}, strategyDetails={};
-  PEST_STRATEGY_GROUPS.forEach(function(sg){ strategies[sg.key]=[]; strategyDetails[sg.key]={}; });
-  return {id:id, category:'蟲害', name:'',
-    stage:'', climate:[], climateDetail:{},
-    transmission:[], transmissionDetail:{},
-    strategies:strategies, strategyDetails:strategyDetails};
+/* 官方是「請說明」的欄：做成文字框，沿用官方提示語 */
+function renderPestTextCol(col,entry,onChange){
+  var wrap=document.createElement('div'); wrap.className='field';
+  var lab=document.createElement('label'); lab.className='q'; lab.style.fontSize='16px'; lab.textContent=col.label; wrap.appendChild(lab);
+  var h=document.createElement('div'); h.className='fhint'; h.textContent=col.prompt+'（沒有做就留白）'; wrap.appendChild(h);
+  var ta=document.createElement('textarea'); ta.style.minHeight='70px';
+  var ex=(PEST_TEXT_EXAMPLES[entry.category]||PEST_TEXT_EXAMPLES['其他'])[col.key]||'';
+  ta.placeholder=ex;
+  ta.value=entry.texts[col.key]||'';
+  ta.oninput=function(){ onChange(ta.value); };
+  wrap.appendChild(ta);
+  if(hasLegacy(ta.value)){
+    var lh=document.createElement('div'); lh.className='warn'; lh.style.fontSize='15px';
+    lh.textContent='這一欄有舊版勾選搬過來的內容。屬實的話，請改寫成實際做法（名稱、次數、用量）；不屬實就刪掉。';
+    wrap.appendChild(lh);
+  }
+  return wrap;
+}
+function removeEvidence(group,fid){
+  lsRemove(evidenceKey(group,fid));
+  lsRemove(evidenceKey(group,fid)+'_note');
 }
 function renderPestSection(group,container){
   container.innerHTML='';
   var intro=document.createElement('div'); intro.className='info'; intro.style.fontSize='15px';
-  intro.textContent='這裡對照官方附件2的「害物種類×IPM策略」表格設計，逐一新增您田裡實際遇到的害物，選了類別後才會出現對應的方法選項。可新增多筆。';
+  intro.textContent='這裡照官方附件2的「害物種類×IPM策略」大表設計，一欄對一欄。田裡遇到的每一種害物填一筆，可以新增多筆。選項和官方表一樣，只勾實際有做的。';
   container.appendChild(intro);
   var entries=getPestEntries(group);
   if(entries.length===0){ entries=[newPestEntry('p0')]; setPestEntries(group,entries); }
-  /* 相容舊版資料格式（detect/control 兩欄，含更舊的 detectOther/controlOther 純字串版本）：
-     搬到新的 strategies.monitor，其餘管理方法請使用者在新欄位重新勾選；遷移完把舊欄位刪乾淨，不留殘餘資料 */
-  var migrated=false;
-  entries.forEach(function(entry){
-    if(!entry.strategies){
-      var fresh=newPestEntry(entry.id);
-      entry.stage=entry.stage||''; entry.climate=entry.climate||[]; entry.climateDetail=entry.climateDetail||{};
-      entry.transmission=entry.transmission||[]; entry.transmissionDetail=entry.transmissionDetail||{};
-      entry.strategies=fresh.strategies; entry.strategyDetails=fresh.strategyDetails;
-      if(entry.detect && entry.detect.length){
-        entry.strategies.monitor=entry.detect;
-        entry.strategyDetails.monitor = entry.detectDetail || (entry.detectOther ? {'其他':entry.detectOther} : {});
-      }
-      delete entry.detect; delete entry.control;
-      delete entry.detectDetail; delete entry.controlDetail;
-      delete entry.detectOther; delete entry.controlOther;
-      migrated=true;
-    }
-  });
-  if(migrated) setPestEntries(group,entries);
+  entries.forEach(normalizePestEntry);
+  function save(){ setPestEntries(group,entries); }
   entries.forEach(function(entry,idx){
     var box=document.createElement('div');
     box.style.cssText='border:2px solid #b7d8bb; border-radius:12px; padding:14px; margin:12px 0; background:#fbfffb;';
@@ -496,75 +671,88 @@ function renderPestSection(group,container){
     title.textContent='害物 '+(idx+1);
     box.appendChild(title);
 
+    /* 害物種類：類別只當標籤，換類別不會清掉已勾的內容 */
     var catWrap=document.createElement('div'); catWrap.className='field';
-    var catLab=document.createElement('label'); catLab.className='q'; catLab.textContent='這是哪一類？'; catWrap.appendChild(catLab);
+    var catLab=document.createElement('label'); catLab.className='q'; catLab.textContent='害物種類：這是哪一類？'; catWrap.appendChild(catLab);
     var sel=document.createElement('select');
-    ['病害','蟲害','草害','其他'].forEach(function(c){ var o=document.createElement('option'); o.value=c; o.textContent=c; if(entry.category===c) o.selected=true; sel.appendChild(o); });
-    sel.onchange=function(){
-      entry.category=sel.value;
-      PEST_STRATEGY_GROUPS.forEach(function(sg){ entry.strategies[sg.key]=[]; entry.strategyDetails[sg.key]={}; });
-      setPestEntries(group,entries); renderPestSection(group,container);
-    };
+    var cats=PEST_CATEGORIES.slice(); if(cats.indexOf(entry.category)===-1) cats.push(entry.category);
+    cats.forEach(function(c){ var o=document.createElement('option'); o.value=c; o.textContent=c; if(entry.category===c) o.selected=true; sel.appendChild(o); });
+    sel.onchange=function(){ entry.category=sel.value; save(); renderPestSection(group,container); };
     catWrap.appendChild(sel); box.appendChild(catWrap);
 
     var nameWrap=document.createElement('div'); nameWrap.className='field';
     var nameLab=document.createElement('label'); nameLab.className='q'; nameLab.textContent='害物名稱'; nameWrap.appendChild(nameLab);
-    var nameHint=document.createElement('div'); nameHint.className='fhint'; nameHint.textContent='例如：東方果實蠅、灰黴病、馬齒莧'; nameWrap.appendChild(nameHint);
+    var nameHint=document.createElement('div'); nameHint.className='fhint'; nameHint.textContent=PEST_NAME_EXAMPLES[entry.category]||'例如：東方果實蠅、灰黴病、馬齒莧'; nameWrap.appendChild(nameHint);
     var inp=document.createElement('input'); inp.type='text'; inp.value=entry.name||'';
-    inp.oninput=function(){ entry.name=inp.value; setPestEntries(group,entries); updateProgress(); };
+    inp.oninput=function(){ entry.name=inp.value; save(); updateProgress(); };
     nameWrap.appendChild(inp); box.appendChild(nameWrap);
 
-    /* 發生盛期：生長階段(文字) + 氣候條件(勾選) */
+    /* 發生盛期：生長階段（文字）＋氣候條件（勾選） */
     var stageWrap=document.createElement('div'); stageWrap.className='field';
-    var stageLab=document.createElement('label'); stageLab.className='q'; stageLab.textContent='發生盛期（作物長到什麼階段、什麼天氣狀況下容易發生）'; stageWrap.appendChild(stageLab);
-    var stageHint=document.createElement('div'); stageHint.className='fhint'; stageHint.textContent='生長階段，例如：苗期、開花期、果實期'; stageWrap.appendChild(stageHint);
+    var stageLab=document.createElement('label'); stageLab.className='q'; stageLab.textContent='發生盛期：生長階段'; stageWrap.appendChild(stageLab);
+    var stageHint=document.createElement('div'); stageHint.className='fhint'; stageHint.textContent='作物長到什麼階段容易發生，例如：苗期、開花期、果實期'; stageWrap.appendChild(stageHint);
     var stageInp=document.createElement('input'); stageInp.type='text'; stageInp.value=entry.stage||'';
-    stageInp.oninput=function(){ entry.stage=stageInp.value; setPestEntries(group,entries); };
+    stageInp.oninput=function(){ entry.stage=stageInp.value; save(); };
     stageWrap.appendChild(stageInp);
     box.appendChild(stageWrap);
-    box.appendChild(renderPestCheckGroup('氣候條件（可複選）',PEST_CLIMATE_OPTIONS,entry.climate,
-      function(vals){ entry.climate=vals; setPestEntries(group,entries); },
-      PEST_GENERIC_TRIGGERS, entry.climateDetail,
-      function(op,v){ entry.climateDetail[op]=v; setPestEntries(group,entries); }));
+    box.appendChild(renderPestCheckGroup('發生盛期：氣候條件（可複選）',PEST_CLIMATE_OPTIONS,entry.climate,
+      function(vals){ entry.climate=vals; save(); },
+      entry.climateDetail,
+      function(op,v){ entry.climateDetail[op]=v; save(); }));
 
     /* 傳播途徑 */
-    box.appendChild(renderPestCheckGroup('傳播途徑（這個害物怎麼從一株傳到另一株、一塊田傳到另一塊田，可複選）',PEST_TRANSMISSION_OPTIONS,entry.transmission,
-      function(vals){ entry.transmission=vals; setPestEntries(group,entries); },
-      PEST_GENERIC_TRIGGERS, entry.transmissionDetail,
-      function(op,v){ entry.transmissionDetail[op]=v; setPestEntries(group,entries); }));
+    box.appendChild(renderPestCheckGroup('傳播途徑（可複選）',PEST_TRANSMISSION_OPTIONS,entry.transmission,
+      function(vals){ entry.transmission=vals; save(); },
+      entry.transmissionDetail,
+      function(op,v){ entry.transmissionDetail[op]=v; save(); }));
 
-    /* 六大管理策略（對齊官方IPM策略欄位） */
-    var catOpts=PEST_CATEGORY_OPTIONS[entry.category];
-    PEST_STRATEGY_GROUPS.forEach(function(sg){
-      var triggers = sg.key==='other_methods' ? PEST_OTHER_METHODS_TRIGGERS : PEST_GENERIC_TRIGGERS;
-      box.appendChild(renderPestCheckGroup(sg.label, catOpts[sg.key]||['其他'], entry.strategies[sg.key],
-        function(vals){ entry.strategies[sg.key]=vals; setPestEntries(group,entries); },
-        triggers, entry.strategyDetails[sg.key],
-        function(op,v){ entry.strategyDetails[sg.key][op]=v; setPestEntries(group,entries); }));
+    /* IPM策略：照官方欄序 */
+    var stTitle=document.createElement('div'); stTitle.style.cssText='font-weight:bold; margin-top:10px; color:var(--green-dark);';
+    stTitle.textContent='IPM策略（照官方表的欄位順序）'; box.appendChild(stTitle);
+    PEST_COLUMNS.forEach(function(col){
+      if(col.type==='check'){
+        box.appendChild(renderPestCheckGroup(col.label+'（可複選）', col.options, entry.strategies[col.key],
+          function(vals){ entry.strategies[col.key]=vals; save(); },
+          entry.strategyDetails[col.key],
+          function(op,v){ entry.strategyDetails[col.key][op]=v; save(); }));
+      } else {
+        box.appendChild(renderPestTextCol(col, entry, function(v){ entry.texts[col.key]=v; save(); }));
+      }
     });
 
     box.appendChild(renderEvidenceWidget(group,'pest_'+entry.id,'田間監測照片（標註日期，呈現病蟲害密度變化）、施藥或防治紀錄、防治藥劑名稱與用量'));
 
     if(entries.length>1){
       var delBtn=document.createElement('button'); delBtn.type='button'; delBtn.className='backlink'; delBtn.textContent='移除這一項害物';
-      delBtn.onclick=function(){ entries.splice(idx,1); setPestEntries(group,entries); renderPestSection(group,container); updateProgress(); };
+      delBtn.onclick=function(){
+        if(!confirm('確定要移除「害物 '+(idx+1)+'」嗎？這一項的照片縮圖和證明說明也會一起刪掉。')) return;
+        removeEvidence(group,'pest_'+entry.id);
+        entries.splice(idx,1); save(); renderPestSection(group,container); updateProgress();
+      };
       box.appendChild(delBtn);
     }
     container.appendChild(box);
   });
   var addBtn=document.createElement('button'); addBtn.type='button'; addBtn.className='bigbtn secondary'; addBtn.textContent='+ 新增一種病蟲草害';
-  addBtn.onclick=function(){ entries.push(newPestEntry('p'+Date.now())); setPestEntries(group,entries); renderPestSection(group,container); };
+  addBtn.onclick=function(){ entries.push(newPestEntry('p'+Date.now())); save(); renderPestSection(group,container); };
   container.appendChild(addBtn);
 }
 
 /* ---------- 報名表欄位定義（依第五屆評選辦法公告版附件2/3/4-1）---------- */
 /* 三組共用的基本資料欄位。「是否與試驗改良場所合作」這題官方文件在各組位置不同：
    技術創新組／行銷推廣組放在「一、基本資料」最後；現場操作組則放在「二、參賽作物相關資料」最後，故不放在這裡共用。 */
-function basicFields(){
+/* 團體成員提示依組別不同：現場操作組照附件2的註；技術創新組依主辦單位裁定；行銷推廣組辦法沒有限制，不顯示 */
+var MEMBER_HINTS={
+  field:'團隊成員只限經營人員，例如不同農場的經營者一起組隊，或同一個農場的經營人員（負責人、聘僱人員）。',
+  tech:'團隊成員可以跨單位、跨法人。技轉廠商和改良場可以用同一件共同具名報名。團體參賽請在上面「團體單位名稱」列出所有參賽人。'
+};
+function basicFields(group){
+  var members={id:'members', label:'團體參賽成員姓名（團體報名才填）', type:'text'};
+  if(MEMBER_HINTS[group]) members.hint=MEMBER_HINTS[group];
   return [
     {id:'entry_type', label:'報名類別', type:'radio', options:['個人','團體/單位']},
     {id:'name', label:'姓名（個人報名）／團體單位名稱（團體報名）', type:'text'},
-    {id:'members', label:'團體參賽成員姓名（團體報名才填）', type:'text', hint:'團隊成員限由經營／相關人員組成'},
+    members,
     {id:'org', label:'所屬單位', type:'text'},
     {id:'contact_name', label:'聯絡人姓名／職稱', type:'text'},
     {id:'phone', label:'聯絡人手機號碼', type:'text'},
@@ -572,11 +760,40 @@ function basicFields(){
     {id:'address', label:'聯絡人地址', type:'text'}
   ];
 }
+/* 報名資料聲明（附件5-2）：三組共用，選項逐字照官方 */
+var DECL_OPT_SELF='本報名資料主要由參賽者自行撰寫及整理。';
+var DECL_OPT_AI='本報名資料曾使用AI工具協助文字生成、潤飾、摘要或排版。';
+var DECL_OPT_HELP='本報名資料曾委請外部人員協助文字撰寫、潤飾、資料整理或排版。';
+var DECL_OPT_OTHER='其他需補充說明事項';
+function declSection(){
+  return { title:'附：報名資料聲明（附件5-2）先想好', decl:true,
+    intro:'官方附件5-2 要照實勾選，並簡述協助情形。先在這裡想好，產生報名表時會列出來，請照這個勾選填官方附件5-2。',
+    fields:[
+      {id:'decl', label:'您的報名資料是怎麼寫出來的？（可複選，照實勾）', type:'checkbox', noCoverage:true,
+        options:[DECL_OPT_SELF, DECL_OPT_AI, DECL_OPT_HELP, DECL_OPT_OTHER],
+        details:(function(){ var d={};
+          d[DECL_OPT_AI]=[{sub:'ai_how', ph:'使用方式簡述'}];
+          d[DECL_OPT_HELP]=[{sub:'helper_who', ph:'協助者身分／單位'},{sub:'helper_what', ph:'協助內容簡述'}];
+          return d; })()}
+    ]};
+}
+/* 行銷推廣成果自評表（附件4-1）：官方的得分欄是一個面向一格，配分照官方 */
+var PROMO_SELF_EVAL=[
+  {id:'know', name:'人力知識', max:15, items:['1. 組織成員對於IPM原理認知程度','2. 組織成員積極進修、資訊獲取管道多元性及可靠度','3. 充分利用公部門和私部門的專業知識','4. 推廣內容與IPM之直接相關程度']},
+  {id:'social', name:'社會效益', max:45, items:['5. 運用多元且有效之方式推廣IPM概念：講習會、文宣品、網站、APP、食農活動等','6. 透過主動行銷推廣，提升目標對象（農友、通路、消費者等）對於IPM認識','7. 透過行銷推廣，提升目標對象（農友、通路、消費者等）對於IPM之認同，並促成行為改變','8. 藉由組織內、外部單位協作，有效執行IPM行銷推廣：資訊交流、執行、合作推廣等']},
+  {id:'econ', name:'經濟效益', max:15, items:['9. 推廣輔導活動之產業效益','10. 採購或推廣IPM農產品之程度','11. 提升消費端選購IPM農產品之程度']},
+  {id:'env', name:'環境效益', max:25, items:['12. 化學農藥風險減量效益','13. 降低有害生物管理活動對環境的不利影響程度','14. 擴大導入IPM方法之耕作面積','15. 提升政府施政效能']}
+];
+var FORMAT_NOTE={
+  tech:'官方附件3 請用 12pt 標楷體（中文）、Times New Roman（英文）、固定行高 18 排版。',
+  promo:'官方附件4-1 請用 12pt 標楷體（中文）、Times New Roman（英文）、固定行高 18 排版。'
+};
+var TEST_FIELD_WARN='依評選辦法：和試驗改良場所、學研單位合作的試驗田區，要在報名資料主動說明合作內容、試驗範圍和成果歸屬。這塊試驗田區和試驗成果不列入評分，田區生產的農產品不能販售。沒有主動說明，可能被取消參賽資格。';
 
 var FORMS = {
   field:{ groupName:'現場操作組', formName:'作物有害生物整合管理方法項目表（附件2）',
     sections:[
-      { title:'一、基本資料', fields: basicFields() },
+      { title:'一、基本資料', fields: basicFields('field') },
       { title:'二、參賽作物相關資料', fields:[
         {id:'crop_class', label:'參賽作物分類（可複選）', type:'checkbox', options:['稻米','果樹','蔬菜','雜糧及特作','其他']},
         {id:'crop_name', label:'參賽作物別', type:'text'},
@@ -584,10 +801,10 @@ var FORMS = {
         {id:'land_no', label:'參賽作物田區地號（縣市、鄉鎮、地段、地號）', type:'textarea', noEvidence:true},
         {id:'total_area', label:'參賽作物總面積（公頃）', type:'text'},
         {id:'ipm_area', label:'IPM操作面積（公頃）', type:'text', hint:'IPM操作田區面積至少需為總面積的20%'},
-        {id:'yield', label:'每期單位面積產量', type:'text', hint:'例：每年2期，每期鮮重3000公斤/公頃'},
+        {id:'yield', label:'IPM操作田區每期作單位面積產量', type:'text', hint:'請註明鮮重或乾重。例：每年2期，每期鮮重3000公斤/公頃'},
         {id:'plant_method', label:'主要栽種方式', type:'checkbox', options:['露天','設施','網室','其他']},
         {id:'harvest', label:'採收月份（例：3月至6月）', type:'text'},
-        {id:'cert', label:'已獲得之認證（需附佐證資料）', type:'checkbox', options:['有機','有機轉型期','產銷履歷升級版TGAP PLUS','產銷履歷','其他','無']},
+        {id:'cert', label:'已獲得之認證（需附佐證資料）', type:'checkbox', options:['有機','有機轉型期','產銷履歷','產銷履歷升級版（TGAP PLUS）','其他','無']},
         {id:'coop', label:'是否與試驗改良場所、學研單位、儲備植物醫師/植物診療師合作或接受輔導', type:'radio', options:['否','是']},
         {id:'coop_detail', label:'若「是」，合作或輔導人員所任職之單位與姓名', type:'text'}
       ]},
@@ -596,19 +813,23 @@ var FORMS = {
           hint:'請簡述您把IPM方法用在田間的重點與特色（500字內），並摘要說明主要量化成果，例如化學農藥使用風險減量、防治成本變化、產量或品質改善、示範推廣情形等。這裡先寫總覽就好，詳細佐證請放在下面各面向欄位'}
       ]},
       { title:'四、人力知識（評分佔45分）',
-        warning:'請只勾選您實際做到、且能提供佐證的項目。評審會核對佐證資料，勾選了卻拿不出證明，比誠實少勾更容易被扣分或引起質疑。',
+        warning:'請只勾選您實際做到、且能提供佐證的項目。評審會核對佐證資料，勾選了卻拿不出證明，比誠實少勾更容易被扣分或引起質疑。官方表說：沒有執行的項目請留白。',
         fields:[
         {id:'pest_entries', label:'害物與管理方式', type:'pestlist'},
         {id:'safety_gear', label:'安全防護措施（可複選）', type:'checkbox',
-          options:['口鼻防護具','呼吸防護具','眼部防護具','手套','雨鞋','全套衣','未使用化學農藥','其他']},
+          hint:'請勾選所採取的措施，並提供照片或相關紀錄佐證。沒有做就留白。',
+          options:['口鼻防護具','呼吸防護具','眼部防護具','橡膠鞋','手套','全套衣','圍裙','手袖','其他']},
         {id:'correct_diagnosis', label:'正確診斷（用藥或防治前，您確認了哪些事？可複選）', type:'checkbox',
           options:['確認害物種類','確認發生生態','氣候環境條件','其他']},
-        {id:'dosing_principle', label:'對症用藥（若有使用化學農藥，可複選）', type:'checkbox',
-          options:['選用已登記藥劑','依標籤指示使用','選擇低毒性藥劑','遵守安全採收期','單劑輪流使用避免抗藥性','其他','未使用化學農藥']},
+        {id:'dosing_principle', label:'對症用藥（可複選）', type:'checkbox',
+          hint:'沒有用化學農藥的話，這題留白就好。',
+          options:['選用已登記藥劑','依照標籤使用農藥','選用較低毒性的農藥','安全採收期','其他']},
         {id:'regulation_compliance', label:'法規認知與合規性（可複選）', type:'checkbox',
-          options:['遵照農藥管理法，僅使用該作物核准登記之合法藥劑','遵守安全採收期（停藥期）規定','具備禁用或偽劣農藥辨識能力，田區絕不存放或使用非法資材','遵循免登記植物保護資材規範，防範違規添加化學成分','定期參與農藥安全與法規講習','其他']},
+          hint:'請勾選符合的做法，並提供佐證文件或用藥紀錄。',
+          options:['遵照「農藥管理法」，僅使用該作物核准登記之合法藥劑','遵守「安全採收期（停藥期）」規定，確保符合農藥殘留相關規定','具備禁用或偽劣農藥辨識能力，田區絕不存放或使用非法資材','遵循「免登記植物保護資材」規範，防範違規添加化學成分','定期參與防檢署或學研單位辦理之農藥安全與法規講習','其他']},
         {id:'field_safety', label:'田區環境與安全（可複選）', type:'checkbox',
-          options:['落實田區環境整潔度維護，農業剩餘資材與廢棄物即時清理','規劃流暢安全的作業動線','高風險區域或特定器械周邊設置明顯危害安全標示','落實用電與灌溉設備安全防護（如漏電斷路器、配電箱防雨）','其他']},
+          hint:'請勾選田區現場安全的規劃項目，並提供實地規劃照片或查核紀錄。',
+          options:['落實「田區環境整潔度」維護，農業剩餘資材與廢棄物即時清理','規劃流暢安全的「作業動線」，確保人員操作與搬運之安全性','於高風險區域或特定器械周邊，設置明顯的「危害安全標示」','落實「用電與灌溉設備」安全防護（如漏電斷路器、配電箱防雨）','其他']},
         {id:'knowledge_detail', label:'想再補充說明（選填）', type:'textarea',
           hint:'例如：發生時期、田間觀察到的細節、其他做法。上面勾選不夠寫的都可以補在這裡',
           evidenceHint:'防護裝備照片、藥罐標註作用機制的照片、農藥購買證明、水質或土壤檢驗報告'}
@@ -617,18 +838,21 @@ var FORMS = {
         warning:'一樣只勾選實際有做的項目，課程證書、會員證、活動照片等佐證盡量附上，勾選和佐證對得起來才有加分效果。',
         fields:[
         {id:'ref_books', label:'書籍與參考資料：您參考過哪些資料？（可複選）', type:'checkbox',
+          hint:'請提供照片或書名',
           options:['作物營養需求','施肥手冊','病害發生與管理','蟲害發生與管理','雜草種類與防除','最新登記藥劑清單','農藥使用技術','作物栽培管理手冊','其他']},
-        {id:'org_join', label:'農民組織：您有沒有參加這些組織？（可複選）', type:'checkbox',
-          options:['產銷班','合作社','農民團體','其他','無']},
+        {id:'org_join', label:'農民組織：您有沒有參加這些組織？（可複選，請寫名稱）', type:'checkbox',
+          options:['產銷班','合作社','農民團體','其他','無'],
+          details:{'產銷班':[{sub:'name_prod', ph:'產銷班名稱'}], '合作社':[{sub:'name_coop', ph:'合作社名稱'}], '農民團體':[{sub:'name_group', ph:'團體名稱'}]}},
         {id:'meetings', label:'參加講習會、研討會等', type:'textarea', hint:'請列舉參與過的會議名稱（選填）'},
         {id:'online_community', label:'網路社群', type:'textarea', hint:'請列舉參與的社群，例如LINE群組、臉書社團名稱（選填）'},
-        {id:'tech_exchange', label:'技術交流與經驗分享', type:'textarea', hint:'請說明您和其他農友交流IPM經驗的情形（選填）'},
+        {id:'tech_exchange', label:'技術交流與經驗分享', type:'textarea', hint:'請列舉您和其他農友交流IPM經驗的情形（選填）'},
         {id:'research_coop', label:'與試驗研究單位合作（可複選）', type:'checkbox',
-          options:['試用新防治技術','設置試驗田區','辦理示範觀摩','辦理講習研討會','推廣新防治技術','其他']},
+          options:['試用新防治技術','設置試驗田區','辦理示範觀摩','辦理講習研討會','推廣新防治技術','其他'],
+          checkWarn:{'設置試驗田區': TEST_FIELD_WARN}},
         {id:'pathologist_coop', label:'與植物診療師合作或接受輔導', type:'text', hint:'若有，請寫明植物診療師的單位、姓名（選填）'},
         {id:'tech_diffusion', label:'技術擴散：有沒有把您的做法教給別人、擴散出去？（可複選）', type:'checkbox',
-          hint:'這是社群組織的加分重點',
-          options:['主動向周邊農民分享，推廣正確IPM觀念與技術','與其他農民建立共同監測或區域共同防治機制','辦理或協助推動田間示範觀摩會、講習會，擴散成功經驗','利用LINE等社群媒體或通訊軟體，正確解答鄰近農友諮詢','其他']},
+          hint:'請提供技術擴散輔導紀錄、群組交流或共同防治流程等佐證。這是社群組織的加分重點',
+          options:['主動向周邊農民分享，並推廣正確的IPM觀念與技術','與其他農民建立共同監測、協作或產區區域共同防治機制','辦理或協助推動田間示範觀摩會、講習會，擴散成功經驗','利用社群媒體或通訊軟體（如LINE群組），正確解答鄰近農友諮詢','其他']},
         {id:'community_detail', label:'想再補充說明（選填）', type:'textarea',
           hint:'上面勾選或填寫不夠的都可以補在這裡',
           evidenceHint:'課程證書（請標註課程名稱與時數）、產銷班或協會會員證、活動合照、推廣活動照片或影片連結'}
@@ -637,13 +861,14 @@ var FORMS = {
         warning:'紀錄要真的留過才勾，成本、收益數字有憑證（單據、紀錄本）最有說服力。',
         fields:[
         {id:'pest_loss_record', label:'有害生物經濟損害紀錄（可複選）', type:'checkbox',
+          hint:'請提供相關紀錄，並說明評估方法',
           options:['評估與記錄有害生物造成的經濟損失','其他']},
         {id:'spray_record_items', label:'保存施藥紀錄：您的紀錄包含哪些項目？（可複選）', type:'checkbox',
-          options:['作物種類','害物種類','藥劑種類及施用量','施用地點','施藥時間','施用器械','氣象資料','安全採收期','廢棄物處理','氣象因子','施用人員','其他']},
+          options:['作物種類','害物種類','藥劑種類、施用量','施用地點','施藥時間','施用器械','氣象資料','安全採收期','廢棄物處理','氣象因子','施用人員','其他']},
         {id:'benefit_eval', label:'效益評估（可複選）', type:'checkbox',
           options:['防治成果評估','藥效評估','藥害評估','環境影響評估','其他']},
         {id:'cost_eval', label:'成本評估：您算過哪些成本？（可複選）', type:'checkbox',
-          options:['藥劑成本','器械成本（含器械折舊）','設施攤提（溫網室、灌溉等設備折舊）','環境成本','人力成本','其他']},
+          options:['藥劑成本','器械成本（包括器械折舊）','設施攤提（包含溫網室、灌溉等設備折舊）','環境成本','人力成本','其他']},
         {id:'income_record', label:'收益紀錄（可複選）', type:'checkbox',
           options:['記錄農產品總收入','記錄淨收益','其他']},
         {id:'econ_numbers', label:'具體數字（選填，越具體越好）', type:'textarea',
@@ -653,9 +878,11 @@ var FORMS = {
       { title:'七、環境效益（評分佔30分）',
         warning:'田區實際沒做到的作法不要勾，照片、購買證明、用量紀錄是最直接的佐證。',
         fields:[
-        {id:'env_reduction', label:'化學農藥減量情形（先講結果，可複選）', type:'checkbox',
+        {id:'env_reduction', label:'化學農藥減量情形（小幫手附加題，官方附件2沒有這一題）', type:'checkbox', extra:true,
+          hint:'這題幫您先整理減量結果，官方表不用勾。可以把結果寫進下面「具體數字」。',
           options:['用藥次數減少','用藥種類減少','改用免登記資材或生物製劑替代','完全不使用化學農藥','尚未減少']},
         {id:'beneficial_impact', label:'對有益生物影響：您考量了哪些？（可複選）', type:'checkbox',
+          hint:'請說明做法，或提供相關佐證資料',
           options:['考量對天敵及授粉昆蟲之影響','對水生生物之影響','其他']},
         {id:'env_impact', label:'對環境影響：您考量了哪些？（可複選）', type:'checkbox',
           options:['考量對水質之影響','考量對土壤之影響','其他']},
@@ -675,7 +902,7 @@ var FORMS = {
         {id:'waste_handling', label:'廢棄物處理（可複選）', type:'checkbox',
           options:['妥善處理廢棄物及廢容器','其他']},
         {id:'drone_operator', label:'合格代噴業者（如未使用植保機，請留白，可複選）', type:'checkbox',
-          hint:'以下3題是「植保機（如無人機）施用植物保護資材之措施」，沒有用植保機噴藥可以直接跳過這3題',
+          hint:'以下3題是「植保機施用植物保護資材之措施」，沒有用植保機（如無人機）噴藥可以直接跳過這3題',
           options:['登記在案之代噴業者（法人）','操作人員具農藥代噴技術人員證書（空中施作類別）','操作人員具遙控無人機專業操作證','其他']},
         {id:'drone_approval', label:'施藥作業核准（如未使用植保機，請留白，可複選）', type:'checkbox',
           options:['向民航局註冊之無人機','向民航局申請投擲或噴灑作業核准','向空域主管機關申請投擲或噴灑作業核准','作業前至民航局遙控無人機管理資訊系統辦理報到','作業後至民航局遙控無人機管理資訊系統辦理報離','作業結束後至無人機代噴登記管理平台填報施藥紀錄及上傳飛行軌跡','其他']},
@@ -684,23 +911,24 @@ var FORMS = {
         {id:'env_numbers', label:'具體數字（選填，越具體越好）', type:'textarea',
           hint:'例如：化學農藥用量減少約N公斤、用藥次數從X次降到Y次',
           evidenceHint:'友善資材購買證明、田間天敵照片、用藥前後對照的用量紀錄'}
-      ]}
+      ]},
+      declSection()
     ]},
   tech:{ groupName:'技術創新組', formName:'作物有害生物整合管理技術成果資料表（附件3）',
     note:'各欄請簡明扼要（1000字內），聚焦「參賽技術」，勿羅列團隊所有成果。',
     sections:[
-      { title:'一、基本資料', fields: basicFields().concat([
+      { title:'一、基本資料', fields: basicFields('tech').concat([
         {id:'coop', label:'若參賽技術與試驗改良場所、學研單位合作，請提供聯絡資訊', type:'radio', options:['否','是']},
         {id:'coop_detail', label:'若「是」，合作單位名稱與聯絡人姓名', type:'text'}
       ]) },
       { title:'二、參賽技術簡介', fields:[
         {id:'tech_name', label:'成果（技術）名稱', type:'text'},
-        {id:'tech_type', label:'技術類型（可複選）', type:'checkbox', options:['新技術','新資材','新應用策略','其他']},
+        {id:'tech_type', label:'技術類型（可複選）', type:'checkbox', options:['新技術','新資材','新應用策略（舊技術新用途）','其他']},
         {id:'trl', label:'技術成熟度階段', type:'select', options:['TRL1-4（可行性驗證）','TRL5（實驗室驗證原型）','TRL6（實際環境驗證）','TRL7（示範/成本評估）','TRL8（商業化/技轉少量使用）','TRL9（持續生產普及）']},
         {id:'summary', label:'成果摘要', type:'textarea', maxlen:500, noEvidence:true, hint:'本技術解決的問題、執行重點與成果（約500字）。這裡先寫總覽就好，詳細佐證請放在下面各欄位'},
         {id:'innovation', label:'創新性', type:'textarea', maxlen:1000, hint:'與既有技術的差異、如何整合到田間管理、提升防治效能的比率。請盡量檢附科學實證數據佐證（如實驗室數據、對照組田間試驗數據）',
           evidenceHint:'對照組田間試驗數據、實驗室檢測報告、技術效果前後對照照片'},
-        {id:'community', label:'社群組織', type:'textarea', maxlen:1000, hint:'出版、發表、推廣、獲獎，以及跨單位協作情形',
+        {id:'community', label:'社群組織', type:'textarea', maxlen:1000, hint:'出版、發表、推廣、獲獎，以及跨單位協作情形。研究出版品的清單請寫在下面「三、附件資料」，照《植物醫學期刊》格式列點',
           evidenceHint:'出版品或發表文章、得獎證明、跨單位合作意向書或會議紀錄'},
         {id:'econ', label:'產業應用及經濟效益', type:'textarea', maxlen:1000, hint:'技術導入應用程度、創造的產業價值、使用者收益增加（如降低多少比例田間管理成本，請以具體數字說明）',
           evidenceHint:'技術應用者收益數據、成本節省試算表、產業應用合約或報告'},
@@ -709,21 +937,28 @@ var FORMS = {
         {id:'case', label:'應用案例', type:'textarea', maxlen:1000, hint:'至少一項實際應用：應用者、概況、應用多久、場域及規模、成效、應用者聯絡資訊。第2階段實地審查原則須提供3至5處應用場域及聯絡資訊；若僅單一場域，請說明原因及代表性',
           evidenceHint:'應用場域照片、應用者訪談紀錄或聯絡資訊'},
         {id:'fund_amount', label:'投入研發與推廣經費約（元）', type:'text'},
-        {id:'fund_public', label:'其中來自公部門的比例（%）', type:'text'},
+        {id:'fund_public', label:'其中來自公部門的比例（%）', type:'text',
+          hint:'評分有一項「自主研發」加分0～10分：研發的經費等資源，主要來自非公部門的，可以加分。請照實填比例。'},
         {id:'fund_method', label:'經費估算方式（選填）', type:'textarea', hint:'例如：OO萬元經費中包含哪些項目（人事、材料、設備等）',
           evidenceHint:'經費明細表或收據'}
-      ]}
+      ]},
+      { title:'三、附件資料', fields:[
+        {id:'attach_list', label:'過去5年與參賽技術相關的研究報告或出版品、得獎證明、專利證明、技轉資料（列點）', type:'textarea', noEvidence:true,
+          hint:'研究出版品請照《植物醫學期刊》的徵件格式列點說明。挑重要、有代表性的就好，詳細資料放附件。'}
+      ]},
+      declSection()
     ]},
   promo:{ groupName:'行銷推廣組', formName:'作物有害生物整合管理行銷推廣成果資料表（附件4-1）',
     note:'各欄請簡明扼要（1000字內），並明確標示與IPM的關連性。',
     sections:[
-      { title:'一、基本資料', fields: basicFields().concat([
+      { title:'一、基本資料', fields: basicFields('promo').concat([
         {id:'coop', label:'若與試驗改良場所、學研單位合作推廣作物有害生物整合管理，請提供聯絡資訊', type:'radio', options:['否','是']},
         {id:'coop_detail', label:'若「是」，合作單位名稱與聯絡人姓名', type:'text'}
       ]) },
       { title:'二、行銷推廣成果簡介', fields:[
         {id:'intro', label:'參賽者簡介', type:'textarea', maxlen:500, noEvidence:true, hint:'主要業務項目，及與IPM行銷推廣的關連性（500字內）'},
-        {id:'strategy', label:'主要推廣策略（至多3項）', type:'checkbox', options:['輔導培訓課程','田間現場示範','擔任輔導顧問','出版推廣文宣品','採購IPM農產品','行銷推廣IPM農產品','其他']},
+        {id:'strategy', label:'主要應用推廣策略（請勾選「主要」策略，至多3項）', type:'checkbox', maxChecked:3,
+          options:['辦理作物有害生物整合管理之輔導培訓課程','辦理作物有害生物整合管理之田間現場示範','擔任作物有害生物整合管理之輔導顧問','出版或推廣作物有害生物整合管理之相關文宣品','採購應用作物有害生物整合管理之農產品','行銷推廣應用作物有害生物整合管理之農產品','其他']},
         {id:'summary', label:'成果摘要', type:'textarea', maxlen:1000, noEvidence:true, hint:'主要推廣策略、目標對象、成果及效益。請盡量以量化數據或具體案例說明推廣後對認知、認同及行為改變的影響。這裡先寫總覽就好，詳細佐證請放在下面各欄位'},
         {id:'knowledge', label:'人力知識', type:'textarea', maxlen:1000, hint:'對IPM的認知、知識從哪來、辦過的推廣活動、是否聘用植物診療師協助',
           evidenceHint:'參與課程或講習證書、聘用植物診療師的合作文件'},
@@ -736,21 +971,30 @@ var FORMS = {
         {id:'case', label:'應用案例', type:'textarea', maxlen:1000, hint:'至少一項實際行銷推廣案例：目標對象、推廣情形、推廣成效',
           evidenceHint:'目標對象訪談紀錄、推廣成效追蹤數據'},
         {id:'fund_amount', label:'近2年平均每年投入IPM行銷推廣經費約（元）', type:'text'},
-        {id:'fund_public', label:'其中來自公部門的比例（%）', type:'text'},
+        {id:'fund_public', label:'其中來自公部門的比例（%）', type:'text',
+          hint:'評分有一項「自主推廣」加分0～10分：行銷推廣的經費等資源，主要來自非公部門的，可以加分。請照實填比例。'},
         {id:'fund_method', label:'經費估算方式（選填）', type:'textarea', hint:'例如：OO萬元經費中包含哪些項目',
-          evidenceHint:'經費明細表或收據'},
-        {id:'plan', label:'得獎後IPM行銷推廣活動規劃', type:'textarea', noEvidence:true, hint:'得獎者須於獲獎後2年內辦理至少2場次IPM行銷推廣活動，請概述規劃（這是未來規劃，還沒發生，不需要附佐證）'}
-      ]}
+          evidenceHint:'經費明細表或收據'}
+      ]},
+      { title:'三、得獎後IPM行銷推廣活動規劃', fields:[
+        {id:'plan', label:'得獎後IPM行銷推廣活動規劃', type:'textarea', noEvidence:true, hint:'得獎者要在獲獎後2年內辦至少2場IPM行銷推廣活動，辦之前要先通知承辦單位。請概述規劃（這是未來規劃，還沒發生，不需要附佐證）'}
+      ]},
+      { title:'四、行銷推廣成果自評表', fields:[
+        {id:'selfeval', label:'行銷推廣成果自評表（照官方配分自己打分數）', type:'selfeval'}
+      ]},
+      declSection()
     ]}
 };
 
 /* 各組應繳文件與參考佐證資料，附估計頁數（供「佐證資料與頁數規劃」使用；產生報名表時也列於文末）
    defaultPages 是本工具建議的估計值，不是官方規定頁數，使用者可自行調整 */
+var FORM5_ITEM={id:'form5', label:'二年內擔任農業親善大使同意書（附件5-1）、報名資料聲明（附件5-2）', note:'報名時就要繳；請下載官方檔，印出來簽名', defaultPages:2};
 var DOC_ITEMS = {
   field:{
-    baseline:{id:'baseline', label:'本文：基本報名表＋附件2內容（含四大面向勾選與說明）', defaultPages:6},
+    formLabel:'報名表（現場操作組附件2）',
+    baseline:{id:'baseline', label:'本文：報名表（附件2）內容（含四大面向勾選與說明）', defaultPages:6},
     required:[
-      {id:'form5', label:'農業親善大使同意書、報名資料聲明（附件5）', note:'需簽名／用印', defaultPages:2},
+      FORM5_ITEM,
       {id:'evidence2', label:'附件2佐證資料', note:'田間照片、施藥紀錄、資材購買紀錄、教育訓練證書等', defaultPages:5},
       {id:'pesticide_test', label:'最近1年化學農藥殘留檢驗紀錄與結果，或有機／有機轉型期／綠色保育標章證書', defaultPages:2}
     ],
@@ -761,26 +1005,28 @@ var DOC_ITEMS = {
     ]
   },
   tech:{
-    baseline:{id:'baseline', label:'本文：基本報名表＋附件3內容', defaultPages:5},
+    formLabel:'報名表（技術創新組附件3）',
+    baseline:{id:'baseline', label:'本文：報名表（附件3）內容', defaultPages:5},
     required:[
-      {id:'form5', label:'農業親善大使同意書、報名資料聲明（附件5）', note:'需簽名／用印', defaultPages:2},
+      FORM5_ITEM,
       {id:'evidence3', label:'附件3相關佐證資料', defaultPages:5}
     ],
     reference:[
-      {id:'research5y', label:'過去5年相關研發成果（研究報告、出版品等，3件以內）', defaultPages:6},
+      {id:'research5y', label:'過去5年相關研發成果（研究報告、出版品等，3件以內；出版品照《植物醫學期刊》格式列點）', defaultPages:6},
       {id:'awards', label:'得獎證明、專利證明、技轉資料、產業應用情形報告', defaultPages:3},
       {id:'recommend', label:'推薦函（附件9）', defaultPages:1},
       {id:'other', label:'其他有利佐證資料', defaultPages:2}
     ]
   },
   promo:{
-    baseline:{id:'baseline', label:'本文：基本報名表＋附件4-1內容', defaultPages:5},
+    formLabel:'報名表（行銷推廣組附件4-1）',
+    baseline:{id:'baseline', label:'本文：報名表（附件4-1）內容', defaultPages:5},
     required:[
-      {id:'form5', label:'農業親善大使同意書、報名資料聲明（附件5）', note:'需簽名／用印', defaultPages:2},
+      FORM5_ITEM,
       {id:'evidence4', label:'附件4-1相關佐證資料', defaultPages:5}
     ],
     reference:[
-      {id:'activity2y', label:'過去2年推廣活動成果佐證（活動、課程、田間示範、文宣等，5件以內）', defaultPages:8},
+      {id:'activity2y', label:'過去2年（113年8月1日至115年7月31日）推廣活動成果佐證（活動、課程、田間示範、文宣等，5件以內）', defaultPages:8},
       {id:'purchase', label:'過去2年採購或行銷IPM農產品之證明文件', defaultPages:2},
       {id:'recommend', label:'推薦函（附件9）', defaultPages:1},
       {id:'other', label:'其他得獎證明文件等有利佐證資料', defaultPages:2}
@@ -871,13 +1117,16 @@ function computeEvidenceCoverage(group){
     if(!sec.warning) return; /* 只檢查有加誠實原則提醒的評分區塊（人力知識/社群組織/經濟效益/環境效益） */
     var checkedCount=0, hasEvidence=false;
     sec.fields.forEach(function(f){
-      if(f.type==='checkbox'){
+      if(f.type==='checkbox' && !f.noCoverage){
         var v=val(group,f.id);
         if(v) checkedCount += v.split('|').filter(function(x){ return x && COVERAGE_EXCLUDE_VALUES.indexOf(x)===-1; }).length;
       } else if(f.type==='pestlist'){
         var entries=getPestEntries(group);
         entries.forEach(function(e){
-          PEST_STRATEGY_GROUPS.forEach(function(sg){ checkedCount += ((e.strategies&&e.strategies[sg.key])||[]).length; });
+          PEST_COLUMNS.forEach(function(col){
+            if(col.type==='check') checkedCount += ((e.strategies&&e.strategies[col.key])||[]).length;
+            else if(e.texts && (e.texts[col.key]||'').trim()) checkedCount += 1;
+          });
           checkedCount += (e.climate||[]).length + (e.transmission||[]).length;
           var pf=getEvidenceList(group,'pest_'+e.id), pn=getEvidenceNote(group,'pest_'+e.id).trim();
           if(pf.length || pn) hasEvidence=true;
@@ -916,16 +1165,21 @@ function getEvidenceList(group,fid){
   try{
     var arr=raw?JSON.parse(raw):[];
     if(!Array.isArray(arr)) return [];
-    return arr.map(function(x){ return (typeof x==='string') ? {name:x, thumb:null} : x; });
+    return arr.filter(function(x){ return typeof x==='string' || isPlainObj(x); }).map(function(x){
+      if(typeof x==='string') return {name:x, thumb:null};
+      return {name:String(x.name==null?'':x.name), thumb:safeThumb(x.thumb)};
+    });
   }catch(e){ return []; }
 }
+/* 縮圖只接受 data:image/ 開頭的字串，其他一律當作沒有縮圖 */
+function safeThumb(t){ return (typeof t==='string' && t.indexOf('data:image/')===0) ? t : null; }
 /* 直接存 localStorage（不透過 lsGet/lsSet 的靜默降級），才能分辨「沙盒環境完全存不了」跟「這筆太大存不下」兩種狀況 */
 function setEvidenceList(group,fid,arr){
   var key=evidenceKey(group,fid), json=JSON.stringify(arr);
   var sandboxed=false;
   try{ localStorage.length; }catch(e){ sandboxed=true; }
-  if(sandboxed){ _mem[key]=json; return {ok:true}; }
-  try{ localStorage.setItem(key,json); return {ok:true}; }
+  if(sandboxed){ _mem[key]=json; storageFailed('sandbox'); return {ok:true}; }
+  try{ localStorage.setItem(key,json); if(hasOwn(_mem,key)) delete _mem[key]; return {ok:true}; }
   catch(e){ return {ok:false}; }
 }
 function getEvidenceNote(group,fid){ return lsGet(evidenceKey(group,fid)+'_note')||''; }
@@ -1022,17 +1276,257 @@ function renderEvidenceWidget(group,fid,evidenceHint){
   return wrap;
 }
 
+/* ---------- 舊資料搬移（第1版 → 第2版，2026-09-28 對齊官方表格）----------
+   原則：
+   1. 意思完全一對一的舊選項，才自動換成新文字。
+   2. 意思不一對一、一個舊選項對多個新選項、新版已沒有的選項：絕不自動勾新選項。
+      把舊選項文字放進該欄「其他」說明（或對應文字框），前面加「（舊版勾選，請確認）」，並列入待確認清單。
+   3. 文字框、補充說明、照片縮圖原樣保留。
+   4. 搬移前先把舊值（照片縮圖除外）打包存到 ipmf_<組>__v1_backup；寫入失敗也不中斷、不刪資料。
+   5. 可重複執行：跑兩次結果相同。 */
+var SCHEMA_VERSION=2, SCHEMA_DATE='2026-09-28';
+function metaKey(g,name){ return 'ipmf_'+g+'__'+name; }
+/* 某組的資料 key（不含 ipmf_<組>__ 開頭的系統用 key） */
+function groupDataKeys(g){
+  var prefix='ipmf_'+g+'_';
+  return lsKeys(prefix).filter(function(k){ return k.charAt(prefix.length)!=='_'; });
+}
+function parseJsonArray(s){ try{ var a=JSON.parse(s); return Array.isArray(a)?a:[]; }catch(e){ return []; } }
+/* 一般勾選題：意思一對一的舊選項 → 新選項（官方逐字） */
+var V1_RENAME={
+  field:{
+    safety_gear:{'雨鞋':'橡膠鞋'},
+    dosing_principle:{'依標籤指示使用':'依照標籤使用農藥','選擇低毒性藥劑':'選用較低毒性的農藥','遵守安全採收期':'安全採收期'},
+    regulation_compliance:{
+      '遵照農藥管理法，僅使用該作物核准登記之合法藥劑':'遵照「農藥管理法」，僅使用該作物核准登記之合法藥劑',
+      '遵守安全採收期（停藥期）規定':'遵守「安全採收期（停藥期）」規定，確保符合農藥殘留相關規定',
+      '遵循免登記植物保護資材規範，防範違規添加化學成分':'遵循「免登記植物保護資材」規範，防範違規添加化學成分'},
+    field_safety:{
+      '落實田區環境整潔度維護，農業剩餘資材與廢棄物即時清理':'落實「田區環境整潔度」維護，農業剩餘資材與廢棄物即時清理',
+      '規劃流暢安全的作業動線':'規劃流暢安全的「作業動線」，確保人員操作與搬運之安全性',
+      '高風險區域或特定器械周邊設置明顯危害安全標示':'於高風險區域或特定器械周邊，設置明顯的「危害安全標示」',
+      '落實用電與灌溉設備安全防護（如漏電斷路器、配電箱防雨）':'落實「用電與灌溉設備」安全防護（如漏電斷路器、配電箱防雨）'},
+    tech_diffusion:{
+      '主動向周邊農民分享，推廣正確IPM觀念與技術':'主動向周邊農民分享，並推廣正確的IPM觀念與技術',
+      '與其他農民建立共同監測或區域共同防治機制':'與其他農民建立共同監測、協作或產區區域共同防治機制',
+      '利用LINE等社群媒體或通訊軟體，正確解答鄰近農友諮詢':'利用社群媒體或通訊軟體（如LINE群組），正確解答鄰近農友諮詢'},
+    spray_record_items:{'藥劑種類及施用量':'藥劑種類、施用量'},
+    cost_eval:{'器械成本（含器械折舊）':'器械成本（包括器械折舊）','設施攤提（溫網室、灌溉等設備折舊）':'設施攤提（包含溫網室、灌溉等設備折舊）'},
+    cert:{'產銷履歷升級版TGAP PLUS':'產銷履歷升級版（TGAP PLUS）'}
+  },
+  tech:{ tech_type:{'新應用策略':'新應用策略（舊技術新用途）'} },
+  promo:{ strategy:{
+    '輔導培訓課程':'辦理作物有害生物整合管理之輔導培訓課程',
+    '田間現場示範':'辦理作物有害生物整合管理之田間現場示範',
+    '擔任輔導顧問':'擔任作物有害生物整合管理之輔導顧問',
+    '出版推廣文宣品':'出版或推廣作物有害生物整合管理之相關文宣品',
+    '採購IPM農產品':'採購應用作物有害生物整合管理之農產品',
+    '行銷推廣IPM農產品':'行銷推廣應用作物有害生物整合管理之農產品'} }
+};
+/* 害物清單：舊選項 → [新欄, 新選項]；新選項為 null 代表意思不確定，放進該新欄「其他」說明待確認 */
+var PEST_V1_MAP={
+  monitor:{'黃色或藍色黏紙監測':['monitor','有色黏紙']},
+  cultivation:{'田間衛生（清除病葉病果）':['cultivation','田間衛生']},
+  physical:{'覆蓋物（如黑布、稻殼）':['physical','鋪設覆蓋物'], '黏紙誘捕':['physical','有色黏紙']},
+  microbial:{},
+  beneficial:{'誘蟲器':['monitor','誘蟲器'], '性費洛蒙／交配干擾劑':['monitor',null]}
+};
+/* 舊「免登資材與化學防治」勾選 → 新文字欄（一律待確認） */
+var PEST_V1_OTHER_METHODS={'免登記植物保護資材':'nonreg','化學農藥（必要時）':'chemical','化學除草劑（必要時）':'chemical'};
+function pestColumn(key){ for(var i=0;i<PEST_COLUMNS.length;i++){ if(PEST_COLUMNS[i].key===key) return PEST_COLUMNS[i]; } return null; }
+function fieldShortLabel(f){ return String(f.label||f.id).replace(/（[^）]*）$/,''); }
+function pestTag(entry,idx){ return '害物'+(idx+1)+((entry.name||'').trim()?'「'+entry.name.trim()+'」':''); }
+
+function migrateCheckboxField(g,f,pending){
+  var key=fkey(g,f.id), raw=lsGet(key);
+  if(raw===null || raw==='') return;
+  var ren=(V1_RENAME[g]&&V1_RENAME[g][f.id])||{};
+  var out=[], legacy=[];
+  String(raw).split('|').forEach(function(v){
+    if(!v) return;
+    var nv=hasOwn(ren,v) ? ren[v] : v;
+    if(f.options.indexOf(nv)>-1){ if(out.indexOf(nv)===-1) out.push(nv); }
+    else if(legacy.indexOf(v)===-1) legacy.push(v);
+  });
+  var newRaw=out.join('|');
+  if(newRaw!==raw) lsSet(key,newRaw);
+  if(legacy.length){
+    var ok=fkey(g,f.id+'_other'), cur=lsGet(ok)||'';
+    var add=LEGACY_MARK+legacy.join('、');
+    if(cur.indexOf(add)===-1) lsSet(ok, cur ? cur+'；'+add : add);
+    pending.push(fieldShortLabel(f)+'：'+legacy.join('、'));
+  }
+}
+/* 把一筆舊害物資料轉成新版欄位。已是新版（schema 2）就不動。回傳是否有改。 */
+function migratePestEntry(entry,idx,pending){
+  if(!isPlainObj(entry) || entry.schema===SCHEMA_VERSION) return false;
+  var old, oldD, v0=null;
+  if(isPlainObj(entry.strategies)){
+    old=entry.strategies; oldD=isPlainObj(entry.strategyDetails)?entry.strategyDetails:{};
+  } else {
+    /* 更早期格式（detect/control 兩欄）：detect 當作監測，control 內容一律待確認 */
+    old={monitor:Array.isArray(entry.detect)?entry.detect.slice():[]};
+    oldD={monitor:isPlainObj(entry.detectDetail)?entry.detectDetail:(entry.detectOther?{'其他':String(entry.detectOther)}:{})};
+    if(Array.isArray(entry.control) && entry.control.length){
+      old.v0_control=entry.control.slice();
+      oldD.v0_control=isPlainObj(entry.controlDetail)?entry.controlDetail:(entry.controlOther?{'其他':String(entry.controlOther)}:{});
+    }
+    v0={detect:entry.detect, detectDetail:entry.detectDetail, detectOther:entry.detectOther,
+        control:entry.control, controlDetail:entry.controlDetail, controlOther:entry.controlOther};
+  }
+  /* 舊內容原封不動留一份在這筆資料裡 */
+  entry.v1={strategies:JSON.parse(JSON.stringify(old)), strategyDetails:JSON.parse(JSON.stringify(oldD))};
+  if(v0) entry.v1.v0=JSON.parse(JSON.stringify(v0));
+
+  var fresh=newPestEntry(entry.id);
+  var ns=fresh.strategies, nd=fresh.strategyDetails, nt=fresh.texts;
+  var legC={}, legT={};
+  function tick(col,opt,detail){
+    if(ns[col].indexOf(opt)===-1) ns[col].push(opt);
+    if(detail) nd[col][opt]=nd[col][opt] ? nd[col][opt]+'；'+detail : detail;
+  }
+  function pushTo(map,col,label){ (map[col]=map[col]||[]).push(label); }
+  Object.keys(old).forEach(function(k){
+    var arr=Array.isArray(old[k])?old[k]:[], det=isPlainObj(oldD[k])?oldD[k]:{};
+    arr.forEach(function(op){
+      if(typeof op!=='string' || !op) return;
+      var d=(typeof det[op]==='string') ? det[op].trim() : '';
+      var label=d ? op+'：'+d : op;
+      var col=pestColumn(k);
+      if(col && col.type==='check'){
+        var m=PEST_V1_MAP[k] && PEST_V1_MAP[k][op];
+        if(m){ if(m[1]) tick(m[0],m[1],d); else pushTo(legC,m[0],label); return; }
+        if(isOtherOpt(op)){ tick(k,'其他',d); return; }
+        if(col.options.indexOf(op)>-1){ tick(k,op,d); return; }
+        pushTo(legC,k,label); return;
+      }
+      if(k==='beneficial'){
+        var m2=PEST_V1_MAP.beneficial[op];
+        if(m2){ if(m2[1]) tick(m2[0],m2[1],d); else pushTo(legC,m2[0],label); return; }
+        pushTo(legT,'beneficial',label); return;
+      }
+      if(k==='other_methods'){ pushTo(legT, PEST_V1_OTHER_METHODS[op]||'other', label); return; }
+      pushTo(legT,'other',label);
+    });
+  });
+  var tag=pestTag(entry,idx);
+  Object.keys(legC).forEach(function(col){
+    var add=LEGACY_MARK+legC[col].join('、');
+    var cur=nd[col]['其他']||'';
+    nd[col]['其他']=cur ? cur+'；'+add : add;
+    pending.push(tag+'－'+pestColumn(col).label+'：'+legC[col].join('、'));
+  });
+  Object.keys(legT).forEach(function(col){
+    var add=LEGACY_MARK+legT[col].join('；');
+    nt[col]=nt[col] ? nt[col]+'\n'+add : add;
+    pending.push(tag+'－'+pestColumn(col).label+'：'+legT[col].join('；'));
+  });
+  entry.strategies=ns; entry.strategyDetails=nd; entry.texts=nt;
+  ['detect','detectDetail','detectOther','control','controlDetail','controlOther'].forEach(function(k){ delete entry[k]; });
+  normalizePestEntry(entry);
+  entry.schema=SCHEMA_VERSION;
+  return true;
+}
+/* 備份用：佐證清單只留檔名，縮圖不備份（避免爆容量；縮圖本身仍原樣留在原來的 key） */
+function stripThumbs(v){
+  try{
+    var arr=JSON.parse(v);
+    if(!Array.isArray(arr)) return v;
+    return JSON.stringify(arr.map(function(x){
+      if(typeof x==='string') return x;
+      return {name:(x&&x.name)||'', thumb:(x&&x.thumb)?'(縮圖沒有備份，原圖仍在原欄位)':null};
+    }));
+  }catch(e){ return v; }
+}
+/* 搬移某一組。opts.force：不管版本號都跑（匯入舊版備份時用）；opts.backupName：備份 key 名稱 */
+function migrateGroup(g,opts){
+  opts=opts||{};
+  var res={migrated:false, pending:[]};
+  if(!hasOwn(FORMS,g)) return res;
+  var schemaKey=metaKey(g,'schema');
+  if(!opts.force && lsGet(schemaKey)===String(SCHEMA_VERSION)) return res;
+  var keys=groupDataKeys(g);
+  if(keys.length===0){ lsSet(schemaKey,String(SCHEMA_VERSION)); return res; }
+
+  /* 1. 先備份（已有備份就不覆蓋，確保留下的是最原始的舊資料） */
+  try{
+    var backupKey=metaKey(g, opts.backupName||'v1_backup');
+    if(lsGet(backupKey)===null){
+      var bk={};
+      keys.forEach(function(k){ var v=lsGet(k); bk[k]=/_evidence$/.test(k) ? stripThumbs(v) : v; });
+      lsSet(backupKey, JSON.stringify({schema:1, savedAt:new Date().toISOString(), data:bk}));
+    }
+  }catch(e){}
+
+  var pending=[];
+  /* 2. 一般勾選題 */
+  allFields(g).forEach(function(f){
+    if(f.type==='checkbox'){ try{ migrateCheckboxField(g,f,pending); }catch(e){} }
+  });
+  /* 3. 害物清單 */
+  if(allFields(g).some(function(f){ return f.type==='pestlist'; })){
+    try{
+      var entries=getPestEntries(g), changed=false;
+      entries.forEach(function(e,idx){ if(migratePestEntry(e,idx,pending)) changed=true; });
+      if(changed) setPestEntries(g,entries);
+    }catch(e){}
+  }
+  /* 4. 待確認清單（累加、不重複） */
+  if(pending.length){
+    var pk=metaKey(g,'pending'), list=parseJsonArray(lsGet(pk));
+    var added=false;
+    pending.forEach(function(p){ if(list.indexOf(p)===-1){ list.push(p); added=true; } });
+    if(added){ lsSet(pk, JSON.stringify(list)); lsRemove(metaKey(g,'pending_ack')); }
+  }
+  lsSet(metaKey(g,'migrated'), SCHEMA_DATE);
+  lsSet(schemaKey, String(SCHEMA_VERSION));
+  res.migrated=true; res.pending=pending;
+  return res;
+}
+/* 表單頂端的更新說明框（D3） */
+function renderMigrationNotice(g,box){
+  if(!lsGet(metaKey(g,'migrated'))) return;
+  var list=parseJsonArray(lsGet(metaKey(g,'pending')));
+  var wrap=document.createElement('div'); wrap.className='warn no-print';
+  function draw(){
+    wrap.innerHTML='';
+    var acked=lsGet(metaKey(g,'pending_ack'))==='1';
+    var head=document.createElement('div');
+    if(acked){
+      head.textContent='報名小幫手已依官方表格更新（2026-09-28）。'+(list.length?'有 '+list.length+' 項待確認。':'');
+      wrap.appendChild(head);
+      if(list.length){
+        var more=document.createElement('button'); more.type='button'; more.className='backlink'; more.textContent='再看一次待確認清單';
+        more.onclick=function(){ lsSet(metaKey(g,'pending_ack'),'0'); draw(); };
+        wrap.appendChild(more);
+      }
+      return;
+    }
+    head.textContent='報名小幫手已依官方表格更新（2026-09-28）。您先前填的內容都保留了'+(list.length?'，下面 '+list.length+' 項因為選項調整，請再確認一次：':'。');
+    wrap.appendChild(head);
+    if(list.length){
+      var ul=document.createElement('ul'); ul.style.margin='6px 0';
+      list.forEach(function(s){ var li=document.createElement('li'); li.textContent=s; ul.appendChild(li); });
+      wrap.appendChild(ul);
+      var how=document.createElement('div'); how.style.fontSize='16px';
+      how.textContent='這些舊內容放在各題的「其他」說明或文字框裡，前面標著「'+LEGACY_MARK+'」。屬實就勾選並改成實際做法；不屬實就刪掉。確認好了，把「'+LEGACY_MARK+'」這幾個字刪掉就好。';
+      wrap.appendChild(how);
+    }
+    var ok=document.createElement('button'); ok.type='button'; ok.className='bigbtn secondary';
+    ok.style.cssText='display:inline-block; width:auto; min-height:0; padding:8px 18px; margin:8px 0 0; font-size:18px;';
+    ok.textContent='我知道了';
+    ok.onclick=function(){ lsSet(metaKey(g,'pending_ack'),'1'); draw(); };
+    wrap.appendChild(ok);
+  }
+  draw();
+  box.appendChild(wrap);
+}
+
 /* ---------- 備份匯出／匯入：換裝置或清瀏覽器資料時，用來救回填寫內容 ---------- */
+/* localStorage 的值加上還沒存進去的記憶體內容（_mem 優先），才不會漏掉剛打的字 */
 function collectGroupData(g){
   var prefix='ipmf_'+g+'_', data={};
-  try{
-    for(var i=0;i<localStorage.length;i++){
-      var k=localStorage.key(i);
-      if(k && k.indexOf(prefix)===0) data[k]=localStorage.getItem(k);
-    }
-  }catch(e){
-    Object.keys(_mem).forEach(function(k){ if(k.indexOf(prefix)===0) data[k]=_mem[k]; });
-  }
+  lsKeys(prefix).forEach(function(k){ var v=lsGet(k); if(v!==null) data[k]=v; });
   return data;
 }
 function exportBackup(){
@@ -1040,7 +1534,7 @@ function exportBackup(){
   if(!g){ alert('請先選好組別、開始填寫後再匯出。'); return; }
   var data=collectGroupData(g);
   if(Object.keys(data).length===0){ alert('目前還沒有填寫內容可以匯出。'); return; }
-  var payload={ group:g, groupName:(FORMS[g]&&FORMS[g].groupName)||g, savedAt:new Date().toISOString(), data:data };
+  var payload={ group:g, groupName:(FORMS[g]&&FORMS[g].groupName)||g, schema:SCHEMA_VERSION, savedAt:new Date().toISOString(), data:data };
   var blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
   var url=URL.createObjectURL(blob);
   var a=document.createElement('a');
@@ -1049,16 +1543,56 @@ function exportBackup(){
   setTimeout(function(){ URL.revokeObjectURL(url); },2000);
   alert('已匯出備份檔！請把這個檔案存到LINE傳給自己、或存到雲端硬碟，換裝置時用「匯入備份」讀回來。');
 }
+/* 匯入前的清洗：只收這一組的 key、只收字串值；佐證縮圖只留 data:image/ 開頭的 */
+function sanitizeImportData(g,data){
+  var prefix='ipmf_'+g+'_', out={};
+  Object.keys(data).forEach(function(k){
+    var v=data[k];
+    if(k.indexOf(prefix)!==0 || typeof v!=='string') return;
+    if(/_evidence$/.test(k)){
+      try{
+        var arr=JSON.parse(v);
+        if(Array.isArray(arr)){
+          v=JSON.stringify(arr.filter(function(x){ return typeof x==='string' || isPlainObj(x); }).map(function(x){
+            if(typeof x==='string') return x;
+            return {name:String(x.name==null?'':x.name), thumb:safeThumb(x.thumb)};
+          }));
+        }
+      }catch(e){}
+    }
+    out[k]=v;
+  });
+  return out;
+}
+/* 匯入一份備份物件：驗證 → 寫入 → 舊版就跑搬移。回傳 {ok, msg, group}。 */
+function applyImport(obj){
+  if(!isPlainObj(obj) || typeof obj.group!=='string' || !hasOwn(FORMS,obj.group) || !isPlainObj(obj.data)){
+    return {ok:false, msg:'這個檔案看起來不是本工具的備份檔，請確認選對檔案。'};
+  }
+  var g=obj.group;
+  var data=sanitizeImportData(g,obj.data);
+  if(Object.keys(data).length===0) return {ok:false, msg:'這個備份檔裡沒有可以還原的內容。'};
+  var isV2 = obj.schema===SCHEMA_VERSION || data[metaKey(g,'schema')]===String(SCHEMA_VERSION);
+  Object.keys(data).forEach(function(k){ lsSet(k, data[k]); });
+  var res={migrated:false, pending:[]};
+  if(!isV2){
+    lsRemove(metaKey(g,'v1_backup_import'));
+    res=migrateGroup(g,{force:true, backupName:'v1_backup_import'});
+  }
+  return {ok:true, group:g, migrated:res.migrated, pendingCount:res.pending.length};
+}
 function importBackupFile(inputEl){
   var f=inputEl.files && inputEl.files[0]; if(!f) return;
   var reader=new FileReader();
   reader.onload=function(e){
     try{
       var obj=JSON.parse(e.target.result);
-      if(!obj || !obj.data || !obj.group){ alert('這個檔案看起來不是本工具的備份檔，請確認選對檔案。'); return; }
-      Object.keys(obj.data).forEach(function(k){ lsSet(k, obj.data[k]); });
-      alert('已還原「'+(obj.groupName||obj.group)+'」的備份內容！');
-      goForm(obj.group);
+      var r=applyImport(obj);
+      if(!r.ok){ alert(r.msg); }
+      else {
+        alert('已還原「'+FORMS[r.group].groupName+'」的備份內容！'+(r.migrated?'這是舊版備份，已依官方表格更新，表單最上面會列出要再確認的項目。':''));
+        goForm(r.group);
+      }
     }catch(err){ alert('讀取失敗，請確認選對備份檔案（.json）。'); }
     inputEl.value='';
   };
@@ -1066,23 +1600,89 @@ function importBackupFile(inputEl){
 }
 
 function goForm(group){
+  if(!hasOwn(FORMS,group)) return;
   currentGroup=group;
+  migrateGroup(group);
   var form=FORMS[group];
   document.getElementById('formTitle').textContent=form.groupName+'：'+form.formName;
   document.getElementById('pageBudgetCard').style.display='none';
   var box=document.getElementById('formFields'); box.innerHTML='';
+  renderMigrationNotice(group,box);
+  /* 影片區：可收合，預設展開，記住收合狀態 */
+  if(VIDEOS[group]){
+    var vkey='ipmui_video_collapsed_'+group;
+    var det=document.createElement('details'); det.className='video-box no-print';
+    if(lsGet(vkey)!=='1') det.open=true;
+    var sum=document.createElement('summary'); sum.textContent='先看影片：報名表怎麼寫（點這裡收合／打開）';
+    det.appendChild(sum);
+    var vb=videoBlock(group,null); if(vb) det.appendChild(vb);
+    det.addEventListener('toggle',function(){ lsSet(vkey, det.open?'0':'1'); });
+    box.appendChild(det);
+  }
   if(form.note){ var n=document.createElement('div'); n.className='info'; n.style.fontSize='16px'; n.textContent='填寫提醒：'+form.note; box.appendChild(n); }
+  if(FORMAT_NOTE[group]){ var fn=document.createElement('div'); fn.className='info'; fn.style.fontSize='16px'; fn.textContent='格式提醒：'+FORMAT_NOTE[group]; box.appendChild(fn); }
   form.sections.forEach(function(sec){
     var h=document.createElement('div'); h.className='sec-title'; h.textContent=sec.title; box.appendChild(h);
+    if(sec.intro){ var si=document.createElement('div'); si.className='info'; si.style.fontSize='15px'; si.textContent=sec.intro; box.appendChild(si); }
     if(sec.warning){ var sw=document.createElement('div'); sw.className='warn'; sw.style.fontSize='15px'; sw.textContent=sec.warning; box.appendChild(sw); }
     sec.fields.forEach(function(f){
       if(f.type==='pestlist'){ var c=document.createElement('div'); box.appendChild(c); renderPestSection(group,c); }
+      else if(f.type==='selfeval'){ box.appendChild(renderSelfEval(group,f)); }
       else box.appendChild(renderField(group,f));
     });
   });
   updateProgress();
   document.getElementById('formResultCard').style.display='none';
   showScreen('scr-form');
+}
+
+/* 行銷推廣成果自評表：一個面向一格分數，0～該面向滿分；超出只提醒、不改使用者輸入 */
+function selfEvalKey(group,id){ return fkey(group,'selfeval_'+id); }
+function selfEvalScores(group){
+  var total=0, filled=0, bad=[];
+  PROMO_SELF_EVAL.forEach(function(d){
+    var v=(lsGet(selfEvalKey(group,d.id))||'').trim();
+    if(v==='') return;
+    var n=Number(v);
+    if(isNaN(n) || n<0 || n>d.max){ bad.push(d.name+'（0～'+d.max+'分）'); return; }
+    total+=n; filled++;
+  });
+  return {total:total, filled:filled, bad:bad};
+}
+function renderSelfEval(group,f){
+  var wrap=document.createElement('div'); wrap.className='field';
+  var lab=document.createElement('label'); lab.className='q'; lab.textContent=f.label; wrap.appendChild(lab);
+  var h=document.createElement('div'); h.className='fhint'; h.textContent='官方附件4-1 要填各面向的得分，滿分100分。對照下面的評估指標，照實給自己打分數。'; wrap.appendChild(h);
+  var totalBox=document.createElement('div'); totalBox.style.cssText='font-weight:bold; font-size:19px; margin-top:8px;';
+  function updTotal(){
+    var s=selfEvalScores(group);
+    totalBox.textContent='總分：'+s.total+' / 100 分'+(s.bad.length?'（有分數超出範圍：'+s.bad.join('、')+'）':'');
+    totalBox.style.color=s.bad.length?'#c62828':'var(--green-dark)';
+  }
+  PROMO_SELF_EVAL.forEach(function(d){
+    var box=document.createElement('div'); box.style.cssText='border:1px solid var(--line); border-radius:10px; padding:10px 12px; margin:10px 0; background:#fafafa;';
+    var t=document.createElement('div'); t.style.cssText='font-weight:bold; font-size:18px;'; t.textContent=d.name+'（'+d.max+'分）'; box.appendChild(t);
+    var ul=document.createElement('ul'); ul.style.cssText='margin:4px 0; padding-left:20px; font-size:15px; color:var(--gray);';
+    d.items.forEach(function(it){ var li=document.createElement('li'); li.textContent=it; ul.appendChild(li); });
+    box.appendChild(ul);
+    var row=document.createElement('div'); row.style.cssText='display:flex; align-items:center; gap:8px; flex-wrap:wrap;';
+    var inp=document.createElement('input'); inp.type='number'; inp.min='0'; inp.max=String(d.max); inp.step='1'; inp.inputMode='numeric';
+    inp.style.cssText='width:90px; padding:8px; font-size:19px; border:2px solid var(--line); border-radius:8px;';
+    var key=selfEvalKey(group,d.id);
+    inp.value=lsGet(key)||'';
+    var msg=document.createElement('span'); msg.style.cssText='font-size:15px; color:#c62828;';
+    function chk(){
+      var v=inp.value.trim(), n=Number(v);
+      msg.textContent=(v!=='' && (isNaN(n)||n<0||n>d.max)) ? '請填 0～'+d.max+' 分' : '';
+    }
+    inp.oninput=function(){ lsSet(key,inp.value); chk(); updTotal(); updateProgress(); };
+    row.appendChild(document.createTextNode('得分：')); row.appendChild(inp); row.appendChild(document.createTextNode('/ '+d.max+' 分')); row.appendChild(msg);
+    box.appendChild(row);
+    chk();
+    wrap.appendChild(box);
+  });
+  wrap.appendChild(totalBox); updTotal();
+  return wrap;
 }
 
 function renderField(group,f){
@@ -1098,7 +1698,7 @@ function renderField(group,f){
     var ta=document.createElement('textarea'); ta.value=saved;
     var cnt=document.createElement('div'); cnt.className='counter';
     var upd=function(){ var n=ta.value.length;
-      if(f.maxlen){ cnt.textContent=n+' / '+f.maxlen+' 字'; cnt.className='counter'+(n>f.maxlen?' over':''); }
+      if(f.maxlen){ cnt.textContent=n+' / '+f.maxlen+' 字'+(n>f.maxlen?'（超過了，請自己刪減；小幫手不會幫您刪）':''); cnt.className='counter'+(n>f.maxlen?' over':''); }
       else cnt.textContent=n+' 字'; };
     ta.oninput=function(){ lsSet(key,ta.value); upd(); updateProgress(); };
     upd(); wrap.appendChild(ta); wrap.appendChild(cnt);
@@ -1107,28 +1707,79 @@ function renderField(group,f){
     var opts=document.createElement('div'); opts.className='opts';
     var savedArr = saved? saved.split('|') : [];
     var otherKey=key+'_other';
+    var otherVal=lsGet(otherKey)||'';
+    var hasOtherOpt=f.options.some(isOtherOpt);
+    var warnBoxes=[];
+    var maxMsg=document.createElement('div'); maxMsg.className='err'; maxMsg.style.display='none';
+    function refreshMax(){
+      if(!f.maxChecked) return;
+      var n=opts.querySelectorAll('input[type=checkbox]:checked').length;
+      if(n>f.maxChecked){
+        maxMsg.textContent='官方規定最多勾 '+f.maxChecked+' 項。您現在勾了 '+n+' 項，請自己取消到剩 '+f.maxChecked+' 項。';
+        maxMsg.style.display='block';
+      } else maxMsg.style.display='none';
+    }
     f.options.forEach(function(op){
       var l=document.createElement('label');
       var i=document.createElement('input'); i.type=f.type; i.value=op; i.name=key;
       if(savedArr.indexOf(op)>-1) i.checked=true;
-      var otherInput;
-      if(op==='其他'){
+      var otherInput=null, detailInputs=[], cw=null;
+      if(isOtherOpt(op)){
         otherInput=document.createElement('input'); otherInput.type='text'; otherInput.placeholder='請說明';
-        otherInput.style.cssText='width:150px; margin-left:6px; padding:6px; font-size:16px; border:1px solid var(--line); border-radius:6px; display:'+(i.checked?'inline-block':'none')+';';
-        otherInput.value=lsGet(otherKey)||'';
+        otherInput.style.cssText=DETAIL_INPUT_CSS+' display:'+((i.checked||hasLegacy(otherVal))?'inline-block':'none')+';';
+        otherInput.value=otherVal;
         otherInput.oninput=function(){ lsSet(otherKey, otherInput.value.replace(/\|/g,'、')); };
+      }
+      if(f.details && f.details[op]){
+        f.details[op].forEach(function(dd){
+          var dk=fkey(group,f.id+'_'+dd.sub);
+          var di=document.createElement('input'); di.type='text'; di.placeholder=dd.ph;
+          var dv=lsGet(dk)||'';
+          di.value=dv;
+          di.style.cssText=DETAIL_INPUT_CSS+' display:'+((i.checked||dv)?'inline-block':'none')+';';
+          di.oninput=function(){ lsSet(dk, di.value.replace(/\|/g,'、')); };
+          detailInputs.push(di);
+        });
+      }
+      if(f.checkWarn && f.checkWarn[op]){
+        cw=document.createElement('div'); cw.className='warn'; cw.style.fontSize='15px';
+        cw.textContent='提醒：'+f.checkWarn[op];
+        cw.style.display=i.checked?'block':'none';
+        warnBoxes.push(cw);
       }
       i.onchange=function(){
         var chosen;
         if(f.type==='radio'){ chosen=[op]; }
-        else { chosen=[]; opts.querySelectorAll('input:checked').forEach(function(x){chosen.push(x.value);}); }
+        else {
+          chosen=[]; opts.querySelectorAll('input[type=checkbox]:checked').forEach(function(x){chosen.push(x.value);});
+          if(f.maxChecked && i.checked && chosen.length>f.maxChecked){
+            i.checked=false;
+            alert('這一題官方規定最多勾 '+f.maxChecked+' 項。請先取消一項，再勾這一項。');
+            refreshMax();
+            return;
+          }
+        }
         lsSet(key, chosen.join('|')); updateProgress();
-        if(otherInput) otherInput.style.display = i.checked ? 'inline-block' : 'none';
+        if(otherInput) otherInput.style.display = (i.checked||hasLegacy(otherInput.value)) ? 'inline-block' : 'none';
+        detailInputs.forEach(function(di){ di.style.display=(i.checked||di.value)?'inline-block':'none'; });
+        if(cw) cw.style.display=i.checked?'block':'none';
+        refreshMax();
       };
       l.appendChild(i); l.appendChild(document.createTextNode(' '+op)); opts.appendChild(l);
       if(otherInput) opts.appendChild(otherInput);
+      detailInputs.forEach(function(di){ opts.appendChild(di); });
     });
     wrap.appendChild(opts);
+    /* 沒有「其他」選項、卻有舊版待確認文字的題目：另外給一個文字框顯示 */
+    if(!hasOtherOpt && otherVal){
+      var li=document.createElement('input'); li.type='text'; li.value=otherVal;
+      li.style.cssText='width:100%; padding:8px; font-size:16px; border:1px solid var(--line); border-radius:6px; margin-top:6px;';
+      li.oninput=function(){ lsSet(otherKey, li.value.replace(/\|/g,'、')); };
+      wrap.appendChild(li);
+    }
+    if(hasLegacy(otherVal)){ var lh=document.createElement('div'); lh.className='warn'; lh.style.fontSize='15px'; lh.textContent=LEGACY_HINT; wrap.appendChild(lh); }
+    warnBoxes.forEach(function(w){ wrap.appendChild(w); });
+    wrap.appendChild(maxMsg); refreshMax();
   } else if(f.type==='select'){
     var sel=document.createElement('select');
     var blank=document.createElement('option'); blank.value=''; blank.textContent='（請選擇）'; sel.appendChild(blank);
@@ -1146,6 +1797,8 @@ function updateProgress(){
     if(f.type==='pestlist'){
       var entries=getPestEntries(currentGroup);
       if(entries.some(function(e){ return (e.name||'').trim(); })) filled++;
+    } else if(f.type==='selfeval'){
+      if(selfEvalScores(currentGroup).filled>0) filled++;
     } else if((lsGet(fkey(currentGroup,f.id))||'').trim()) filled++;
   });
   var pct=Math.round(filled/fs.length*100);
@@ -1154,21 +1807,23 @@ function updateProgress(){
 }
 
 /* ---------- 產生報名表 ---------- */
-function esc(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-/* 把佐證清單裡有縮圖的項目印成小圖片，方便投件前核對；沒有縮圖的（如PDF）不印圖 */
+function esc(s){
+  return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+/* 把佐證清單裡有縮圖的項目印成小圖片，方便投件前核對；沒有縮圖的（如PDF）不印圖；縮圖不是 data:image/ 開頭就不輸出 */
 function evidenceImagesHtml(items){
-  var imgs=(items||[]).filter(function(x){ return x && x.thumb; });
+  var imgs=(items||[]).filter(function(x){ return x && safeThumb(x.thumb); });
   if(!imgs.length) return '';
   return '<div style="margin-top:4px;">'+imgs.map(function(x){
-    return '<img src="'+x.thumb+'" style="max-width:110px; max-height:110px; margin:2px; border:1px solid #ccc; border-radius:4px; object-fit:cover;" alt="'+esc(x.name)+'">';
+    return '<img src="'+esc(safeThumb(x.thumb))+'" style="max-width:110px; max-height:110px; margin:2px; border:1px solid #ccc; border-radius:4px; object-fit:cover;" alt="'+esc(x.name)+'">';
   }).join('')+'</div>';
 }
 function val(group,fid){ return (lsGet(fkey(group,fid))||'').trim(); }
 function disp(v){ return v? '<span class="val">'+esc(v).replace(/\|/g,'、')+'</span>' : '<span class="blank">（未填）</span>'; }
-/* 把勾選陣列裡的「其他」換成「其他（補充文字）」再顯示 */
+/* 勾選陣列裡「其他」開頭的選項換成「其他（補充文字）」；沒勾「其他」但有舊版待確認文字，另外標出來 */
 function withOther(arr, otherText){
   otherText=(otherText||'').trim();
-  return arr.map(function(v){ return (v==='其他' && otherText) ? '其他（'+otherText+'）' : v; });
+  return arr.map(function(v){ return (isOtherOpt(v) && otherText) ? v+'（'+otherText+'）' : v; });
 }
 /* 依 detailMap（每個選項各自的補充文字）把陣列裡對應的選項換成「選項（補充文字）」 */
 function withDetails(arr, detailMap){
@@ -1178,11 +1833,100 @@ function withDetails(arr, detailMap){
     return d ? v+'（'+d+'）' : v;
   });
 }
+var PENDING_TAG_HTML='<span style="color:#c62828;">［待確認］</span>';
 function checklistDisplay(group,f){
   var raw=val(group,f.id);
-  if(!raw) return disp('');
+  var arr=raw?raw.split('|'):[];
   var otherText=(lsGet(fkey(group,f.id+'_other'))||'').trim();
-  return disp(withOther(raw.split('|'), otherText).join('|'));
+  if(f.details){
+    arr=arr.map(function(v){
+      if(!f.details[v]) return v;
+      var parts=f.details[v].map(function(dd){ var t=(lsGet(fkey(group,f.id+'_'+dd.sub))||'').trim(); return t?dd.ph+'：'+t:''; }).filter(Boolean);
+      return parts.length ? v+'（'+parts.join('；')+'）' : v;
+    });
+  }
+  var otherChecked=arr.some(isOtherOpt);
+  var legacyLeft=!otherChecked && hasLegacy(otherText);
+  var h=arr.length ? disp(withOther(arr, otherText).join('|')) : (legacyLeft ? '' : disp(''));
+  if(legacyLeft){
+    h+=(h?'<br>':'')+PENDING_TAG_HTML+'<span class="val">'+esc(otherText)+'</span>';
+  }
+  return h;
+}
+/* 害物清單的勾選欄輸出 */
+function pestCheckDisplay(arr,details){
+  arr=arr||[]; details=details||{};
+  var h=arr.length ? disp(withDetails(arr,details).join('|')) : '';
+  Object.keys(details).forEach(function(op){
+    if(arr.indexOf(op)===-1 && hasLegacy(details[op])) h+=(h?'<br>':'')+PENDING_TAG_HTML+'<span class="val">'+esc(details[op])+'</span>';
+  });
+  return h || disp('');
+}
+
+/* 投件前檢查（B3）：只提醒，不擋產生、不改使用者內容 */
+function countLegacyLeft(g){
+  var n=0;
+  allFields(g).forEach(function(f){
+    if(f.type==='checkbox' && hasLegacy(lsGet(fkey(g,f.id+'_other')))) n++;
+  });
+  getPestEntries(g).forEach(function(e){
+    if(isPlainObj(e.strategyDetails)) Object.keys(e.strategyDetails).forEach(function(k){
+      var d=e.strategyDetails[k]; if(isPlainObj(d)) Object.keys(d).forEach(function(op){ if(hasLegacy(d[op])) n++; });
+    });
+    if(isPlainObj(e.texts)) Object.keys(e.texts).forEach(function(k){ if(hasLegacy(e.texts[k])) n++; });
+  });
+  return n;
+}
+function firstNumber(s){ var m=String(s||'').replace(/,/g,'').match(/\d+(\.\d+)?/); return m?parseFloat(m[0]):NaN; }
+function precheckItems(g){
+  var items=[];
+  var basicNeed=[['name','姓名／團體單位名稱'],['contact_name','聯絡人姓名／職稱'],['phone','聯絡人手機號碼'],['email','聯絡人電子郵件信箱'],['address','聯絡人地址']];
+  var blanks=basicNeed.filter(function(p){ return !val(g,p[0]); }).map(function(p){ return p[1]; });
+  if(blanks.length) items.push('基本資料還沒填：'+blanks.join('、'));
+  allFields(g).forEach(function(f){
+    if(f.type==='textarea' && f.maxlen){
+      var n=(lsGet(fkey(g,f.id))||'').length;
+      if(n>f.maxlen) items.push('「'+f.label+'」有 '+n+' 字，超過 '+f.maxlen+' 字上限，請自己刪減');
+    }
+    if(f.type==='checkbox' && f.maxChecked){
+      var c=val(g,f.id); var k=c?c.split('|').filter(Boolean).length:0;
+      if(k>f.maxChecked) items.push('「'+fieldShortLabel(f)+'」勾了 '+k+' 項，官方規定最多 '+f.maxChecked+' 項，請自己減到 '+f.maxChecked+' 項');
+    }
+  });
+  if(g==='field'){
+    var tot=firstNumber(val(g,'total_area')), ipm=firstNumber(val(g,'ipm_area'));
+    if(!isNaN(tot) && !isNaN(ipm) && tot>0 && ipm/tot<0.2){
+      items.push('IPM操作面積（'+ipm+'公頃）不到總面積（'+tot+'公頃）的20%，官方規定至少要20%');
+    }
+  }
+  if(g==='promo'){
+    var s=selfEvalScores(g);
+    if(s.bad.length) items.push('自評表有分數超出範圍：'+s.bad.join('、'));
+    else if(s.filled<PROMO_SELF_EVAL.length) items.push('行銷推廣成果自評表還有面向沒有打分數');
+  }
+  computeEvidenceCoverage(g).filter(function(c){ return c.checkedCount>=COVERAGE_MIN_CHECKED && !c.hasEvidence; }).forEach(function(c){
+    items.push('「'+c.title+'」勾了 '+c.checkedCount+' 項，但還沒有附任何佐證（照片或文字說明）');
+  });
+  var lg=countLegacyLeft(g);
+  if(lg) items.push('還有 '+lg+' 處標著「'+LEGACY_MARK+'」的舊版內容，請確認後刪掉這幾個字');
+  if(!val(g,'decl')) items.push('報名資料聲明（附件5-2）還沒勾');
+  return items;
+}
+function renderPrecheck(g){
+  var box=document.getElementById('precheckBox'); box.innerHTML='';
+  var items=precheckItems(g);
+  var d=document.createElement('div');
+  if(items.length){
+    d.className='err';
+    var t=document.createElement('b'); t.textContent='投件前檢查：下面 '+items.length+' 件事請再看一下（報名表照樣可以產生、列印）'; d.appendChild(t);
+    var ul=document.createElement('ul'); ul.style.margin='6px 0 0';
+    items.forEach(function(s){ var li=document.createElement('li'); li.textContent=s; ul.appendChild(li); });
+    d.appendChild(ul);
+  } else {
+    d.className='info';
+    d.textContent='投件前檢查：基本資料、字數、勾選數量都沒有問題。';
+  }
+  box.appendChild(d);
 }
 
 function makeForm(){
@@ -1192,18 +1936,23 @@ function makeForm(){
   h+='<p style="text-align:center;font-size:13px;color:#666;">（本表由「報名小幫手」依第五屆評選辦法公告版整理，正式投件請對照主辦單位公告的官方附件表格）</p>';
   form.sections.forEach(function(sec){
     h+='<h3>'+esc(sec.title)+'</h3>';
+    if(sec.decl) h+='<p style="font-size:14px;">請照下面的勾選，填寫官方「附件5-2 報名資料聲明」並簽章。</p>';
     var hasPestlist=sec.fields.some(function(f){ return f.type==='pestlist'; });
     if(hasPestlist){
       var entries=getPestEntries(g);
       entries.forEach(function(e,pIdx){
+        normalizePestEntry(e);
         h+='<table style="margin-bottom:14px;"><tr><th colspan="2" style="background:var(--green-light);">害物 '+(pIdx+1)+'：'+esc(e.category)+'　'+esc(e.name||'（未填名稱）')+'</th></tr>';
-        var climateStr=withDetails(e.climate,e.climateDetail).join('|');
-        h+='<tr><th style="width:32%;">發生盛期</th><td>生長階段：'+disp(e.stage)+'<br>氣候條件：'+disp(climateStr)+'</td></tr>';
-        var transStr=withDetails(e.transmission,e.transmissionDetail).join('|');
-        h+='<tr><th>傳播途徑</th><td>'+disp(transStr)+'</td></tr>';
-        PEST_STRATEGY_GROUPS.forEach(function(sg){
-          var str=withDetails((e.strategies&&e.strategies[sg.key])||[], e.strategyDetails&&e.strategyDetails[sg.key]).join('|');
-          h+='<tr><th>'+esc(sg.label)+'</th><td>'+disp(str)+'</td></tr>';
+        h+='<tr><th style="width:32%;">發生盛期</th><td>生長階段：'+disp(e.stage)+'<br>氣候條件：'+pestCheckDisplay(e.climate,e.climateDetail)+'</td></tr>';
+        h+='<tr><th>傳播途徑</th><td>'+pestCheckDisplay(e.transmission,e.transmissionDetail)+'</td></tr>';
+        PEST_COLUMNS.forEach(function(col){
+          var cell;
+          if(col.type==='check') cell=pestCheckDisplay(e.strategies[col.key], e.strategyDetails[col.key]);
+          else {
+            var tv=(e.texts[col.key]||'').trim();
+            cell=tv ? (hasLegacy(tv)?PENDING_TAG_HTML:'')+'<span class="val">'+esc(tv)+'</span>' : disp('');
+          }
+          h+='<tr><th>'+esc(col.label)+'</th><td>'+cell+'</td></tr>';
         });
         var pfiles=getEvidenceList(g,'pest_'+e.id), pnote=getEvidenceNote(g,'pest_'+e.id).trim();
         var pEv=[];
@@ -1213,11 +1962,30 @@ function makeForm(){
         h+='</table>';
       });
     }
-    var normalFields=sec.fields.filter(function(f){ return f.type!=='pestlist'; });
+    var selfF=sec.fields.filter(function(f){ return f.type==='selfeval'; });
+    if(selfF.length){
+      var s=selfEvalScores(g);
+      h+='<table><tr><th style="width:18%;">面向</th><th>評估指標</th><th style="width:16%;">得分</th></tr>';
+      PROMO_SELF_EVAL.forEach(function(d){
+        var v=(lsGet(selfEvalKey(g,d.id))||'').trim(), n=Number(v);
+        var bad=(v!=='' && (isNaN(n)||n<0||n>d.max));
+        h+='<tr><td>'+esc(d.name)+'<br>'+d.max+'分</td><td style="font-size:13px;">'+d.items.map(esc).join('<br>')+'</td><td>'+(v===''?'<span class="blank">（未填）</span>':esc(v)+' 分'+(bad?'<br><span style="color:#c62828;">超出0～'+d.max+'分</span>':''))+'</td></tr>';
+      });
+      h+='<tr><td colspan="2" style="text-align:right;">總分（滿分100分）</td><td><b>'+s.total+' 分</b></td></tr></table>';
+    }
+    var normalFields=sec.fields.filter(function(f){ return f.type!=='pestlist' && f.type!=='selfeval'; });
     if(normalFields.length){
       h+='<table>';
       normalFields.forEach(function(f){
         var dv=(f.type==='checkbox'||f.type==='radio') ? checklistDisplay(g,f) : disp(val(g,f.id));
+        if(f.type==='checkbox' && f.maxChecked){
+          var cv=val(g,f.id), cn=cv?cv.split('|').filter(Boolean).length:0;
+          if(cn>f.maxChecked) dv+='<br><span style="color:#c62828;">注意：官方規定至多勾 '+f.maxChecked+' 項，目前勾了 '+cn+' 項，請減到 '+f.maxChecked+' 項。</span>';
+        }
+        if(f.checkWarn){
+          var cvals=val(g,f.id).split('|');
+          Object.keys(f.checkWarn).forEach(function(op){ if(cvals.indexOf(op)>-1) dv+='<br><span style="font-size:13px;color:#e65100;">提醒：'+esc(f.checkWarn[op])+'</span>'; });
+        }
         if(f.type==='textarea' && !f.noEvidence){
           var files=getEvidenceList(g,f.id), note=getEvidenceNote(g,f.id).trim();
           var evParts=[];
@@ -1225,20 +1993,20 @@ function makeForm(){
           if(note) evParts.push(note);
           if(evParts.length) dv+='<br><span style="font-size:13px;color:#1b5e20;">待附證明：'+esc(evParts.join('；'))+'</span>'+evidenceImagesHtml(files);
         }
-        h+='<tr><th style="width:38%;">'+esc(f.label)+'</th><td>'+dv+'</td></tr>';
+        h+='<tr><th style="width:38%;">'+esc(f.label)+(f.extra?'<br><span style="font-size:12px;color:#888;font-weight:normal;">（官方表沒有這一題，投件時不用填）</span>':'')+'</th><td>'+dv+'</td></tr>';
       });
       h+='</table>';
     }
   });
-  /* 簽名區：農業親善大使同意書 */
-  h+='<h3>農業親善大使同意書（獲獎者須簽署）</h3>';
-  h+='<div class="sign">本人（團隊／單位）同意於頒獎典禮後2年內，擔任農業部之農業親善大使，配合2場次以上示範觀摩會，協助推動IPM之操作與應用。<br><br>'+
-     '立同意書人：＿＿＿＿＿＿＿＿＿（簽章）　身分證字號／統一編號：＿＿＿＿＿＿＿＿＿<br><br>'+
-     '住址／公司地址：＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿　中華民國　＿＿　年　＿＿　月　＿＿　日</div>';
+  /* 附件5 提醒（A1）：報名時就要繳官方檔 */
+  h+='<h3>報名時要一起繳：附件5-1、附件5-2</h3>';
+  h+='<div class="sign">報名時必須繳交官方「<b>附件5-1 二年內擔任農業親善大使同意書</b>」與「<b>附件5-2 報名資料聲明</b>」。<br>'+
+     '請到活動網站 https://ipm-award.mystrikingly.com/ 下載官方檔，列印後簽名。法人或團體：寫上代表人，簽章並用印。<br>'+
+     '線上報名：簽好後掃描上傳。郵寄報名：附上簽好的紙本。</div>';
   /* 必附文件與參考資料檢核 */
   var d=DOC_ITEMS[g];
   h+='<h3>應繳與佐證文件檢核</h3><ul>';
-  h+='<li>☐ 基本報名表（本表）</li>';
+  h+='<li>☐ '+esc(d.formLabel)+'</li>';
   d.required.forEach(function(item){ h+='<li>☐ '+esc(item.label)+(item.note?'（'+esc(item.note)+'）':'')+'</li>'; });
   d.reference.forEach(function(item){
     var included=pbGetInclude(g,item);
@@ -1248,8 +2016,10 @@ function makeForm(){
   var pbTotal=computePageBudgetTotal(g);
   var pbColor = pbTotal>PAGE_LIMIT ? '#c62828' : (pbTotal>=PAGE_LIMIT-5 ? '#e65100' : '#1b5e20');
   h+='<p style="font-size:15px;"><b>您規劃的預估總頁數：<span style="color:'+pbColor+';">'+pbTotal+' / '+PAGE_LIMIT+' 頁</span></b>（僅供參考，實際頁數依您排版後的官方附件為準；如需調整，請至下方「佐證資料與頁數」確認後重新產生報名表）</p>';
+  if(FORMAT_NOTE[g]) h+='<p style="font-size:14px;"><b>格式提醒：</b>'+esc(FORMAT_NOTE[g])+'</p>';
   h+='<p style="font-size:13px;color:#666;">提醒：報名資料以50頁為限（含佐證附件），A4、本文12級字以上，表格圖說不小於10級字，不得以縮小字級、壓縮行距或文字轉圖片等方式規避頁數限制。若使用AI生成文字或請專家協助撰寫，請於報名資料聲明（附件5-2）主動標示。本表為輔助草稿，正式投件請以官方公告的附件表格為準。</p>';
   document.getElementById('formOutput').innerHTML=h;
+  renderPrecheck(g);
   document.getElementById('formResultCard').style.display='block';
   renderEvidenceCoverage(g, document.getElementById('evidenceCoverageBox'));
   renderPageBudget(g, document.getElementById('pageBudgetBox'));
@@ -1271,12 +2041,22 @@ function fallbackCopy(text){
 }
 
 /* ---------- 截止倒數（第五屆評選辦法公告版：115年10月20日23:59線上截止／同日郵戳為憑）---------- */
-(function(){
+/* 用日曆天算：截止當天顯示「今天截止」，前一天顯示「還剩 1 天」 */
+function deadlineText(now){
   var dl=new Date(2026,9,20,23,59,59);
-  var days=Math.ceil((dl-new Date())/86400000);
+  if(now>dl) return '本屆報名已於民國115年10月20日截止';
+  var today=new Date(now.getFullYear(),now.getMonth(),now.getDate());
+  var dday=new Date(2026,9,20);
+  var days=Math.round((dday-today)/86400000);
+  if(days<=0) return '報名截止：民國115年10月20日 · 今天截止（23:59 前）';
+  return '報名截止：民國115年10月20日 · 還剩 '+days+' 天';
+}
+(function(){
   var bar=document.getElementById('deadlineBar');
-  if(days>0) bar.textContent='報名截止：民國115年10月20日 · 還剩 '+days+' 天';
-  else bar.textContent='本屆報名已於民國115年10月20日截止';
+  if(bar) bar.textContent=deadlineText(new Date());
+  /* 注意事項頁：三組影片都列出 */
+  var tv=document.getElementById('tipsVideos');
+  if(tv){ ['field','tech','promo'].forEach(function(g){ var vb=videoBlock(g, GROUPS[g].name); if(vb) tv.appendChild(vb); }); }
 })();
 </script>
 </body>
