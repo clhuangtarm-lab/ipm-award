@@ -26,6 +26,29 @@
 3. **推之前執行 `git diff --stat`**，變動量要和預期相符。改一個日期只會有幾行，如果出現上百行，代表基底拿錯了。
 4. **推完比對線上內容**，不要只看部署成功的燈號。
 
+## 匿名使用量統計
+
+用 [GoatCounter](https://www.goatcounter.com/) 統計匿名的瀏覽與按鈕次數，用來了解推廣成效與農友卡在哪一步。依官方說明，它不會把 IP 和瀏覽器資訊存進資料庫，只存統計後的數值。官方文件沒有明確說明 cookie 的使用，所以本網站不對外宣稱「不使用 cookie」。
+
+- **不收集個人資料。** 只送「事件名稱」，不送使用者填的任何內容。
+- **開關在 `index.html` 的 `ANALYTICS_CODE`。** 留空代表完全不啟用，不載入任何外部程式；填入 GoatCounter 的網站代碼才會啟用，同時頁尾會顯示「只統計匿名次數」的說明。
+- **統計失敗不影響填寫。** 服務被廣告攔截或當機時，網站照常能用。
+
+統計的事件（在 `index.html` 搜尋 `track(`）：
+
+| 事件 | 意思 |
+|---|---|
+| `quiz_start` | 開始分組測驗 |
+| `quiz_result_field` / `_tech` / `_promo` | 看到測驗結果（建議的組別） |
+| `form_open_field` / `_tech` / `_promo` | 開始填報名表（選的組別） |
+| `form_generated_field` / `_tech` / `_promo` | 按下「產生報名表」 |
+| `print` / `copy` | 列印、複製報名表 |
+| `backup_export` / `backup_import` | 匯出、匯入備份 |
+
+要追蹤不同管道的來源（例如 LINE、臉書、說明會海報），在網址後面加 `?ref=管道名稱`，例如 `https://clhuangtarm-lab.github.io/ipm-award/?ref=line`，GoatCounter 會把它列在「來源」裡。
+
+訪客數不等於報名人數：家人或農會人員可能代填多位農友，同一個人也可能用手機和電腦各開一次。統計只能當流程指標。
+
 ## 常見的改動位置
 
 在 `index.html` 裡搜尋這些名稱：

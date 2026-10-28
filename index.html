@@ -281,8 +281,8 @@
 </main>
 
 <footer>
-  填寫內容只儲存在您自己的裝置，不會上傳。<br>
-  最後更新：2026-09-28
+  填寫內容只儲存在您自己的裝置，不會上傳。<span id="analyticsNote" style="display:none;">本網站只統計匿名的瀏覽與按鈕點擊次數，不記錄您填寫的任何內容。</span><br>
+  最後更新：2026-10-28
 </footer>
 
 <script>
@@ -482,7 +482,7 @@ var QUIZ = {
 /* 答題歷程：每答一題記一筆 {題目, 這一步的警告, 答題前的組別}。
    回上一題就把最後一筆拿掉，警告跟著消失；結果頁只顯示目前這條路徑上的警告。 */
 var currentGroup = null, quizPath = [], currentQ = null;
-function startQuiz(){ currentGroup=null; quizPath=[]; renderQ('q1'); showScreen('scr-quiz'); }
+function startQuiz(){ currentGroup=null; quizPath=[]; renderQ('q1'); showScreen('scr-quiz'); track('quiz_start'); }
 function quizWarningsNow(){ return quizPath.filter(function(s){ return s.warn; }).map(function(s){ return s.warn; }); }
 function renderQ(key){
   var q=QUIZ[key]; currentQ=key;
@@ -510,6 +510,7 @@ function quizBack(){
 }
 function showResult(){
   var g=GROUPS[currentGroup]; if(!g){ showScreen('scr-home'); return; }
+  track('quiz_result_'+currentGroup);
   document.getElementById('resultGroup').textContent=g.name;
   document.getElementById('resultDesc').textContent=g.desc;
   var wbox=document.getElementById('resultWarnings'); wbox.innerHTML='';
@@ -1529,6 +1530,7 @@ function collectGroupData(g){
   return data;
 }
 function exportBackup(){
+  track('backup_export');
   var g=currentGroup;
   if(!g){ alert('請先選好組別、開始填寫後再匯出。'); return; }
   var data=collectGroupData(g);
@@ -1582,6 +1584,7 @@ function applyImport(obj){
 }
 function importBackupFile(inputEl){
   var f=inputEl.files && inputEl.files[0]; if(!f) return;
+  track('backup_import');
   var reader=new FileReader();
   reader.onload=function(e){
     try{
@@ -1601,6 +1604,7 @@ function importBackupFile(inputEl){
 function goForm(group){
   if(!hasOwn(FORMS,group)) return;
   currentGroup=group;
+  track('form_open_'+group);
   migrateGroup(group);
   var form=FORMS[group];
   document.getElementById('formTitle').textContent=form.groupName+'：'+form.formName;
@@ -1930,6 +1934,7 @@ function renderPrecheck(g){
 
 function makeForm(){
   var g=currentGroup, form=FORMS[g], h='';
+  track('form_generated_'+g);
   h+='<h2>第五屆永續善農獎 IPM Award 報名表</h2>';
   h+='<h2 style="font-size:18px;">'+form.groupName+'　'+esc(form.formName)+'</h2>';
   h+='<p style="text-align:center;font-size:13px;color:#666;">（本表由「報名小幫手」依第五屆評選辦法公告版整理，正式投件請對照主辦單位公告的官方附件表格）</p>';
@@ -2026,8 +2031,9 @@ function makeForm(){
   document.getElementById('formResultCard').scrollIntoView({behavior:'smooth'});
 }
 
-function printForm(){ window.print(); }
+function printForm(){ track('print'); window.print(); }
 function copyForm(){
+  track('copy');
   var text=document.getElementById('formOutput').innerText;
   if(navigator.clipboard && navigator.clipboard.writeText){
     navigator.clipboard.writeText(text).then(function(){alert('已複製！可貼到 Word 或 LINE 給協助您的人。');},function(){fallbackCopy(text);});
@@ -2038,6 +2044,33 @@ function fallbackCopy(text){
   try{ document.execCommand('copy'); alert('已複製！'); }catch(e){ alert('複製失敗，請手動反白複製。'); }
   document.body.removeChild(ta);
 }
+
+/* ---------- 匿名使用量統計（GoatCounter：只統計次數，官方說明不儲存IP與瀏覽器資訊）----------
+   ANALYTICS_CODE 留空 = 完全不啟用，不載入任何外部程式，頁面也不會顯示統計說明。
+   填入 GoatCounter 的網站代碼（例如 'ipm-award'，對應 https://ipm-award.goatcounter.com）才會啟用。
+   只送「事件名稱」，例如 form_generated_field；絕對不送使用者填寫的任何內容。 */
+var ANALYTICS_CODE='ipm-award';
+function track(name){
+  try{
+    if(!ANALYTICS_CODE) return;
+    if(window.goatcounter && typeof window.goatcounter.count==='function'){
+      window.goatcounter.count({path:'event/'+name, title:name, event:true});
+    }
+  }catch(e){ /* 統計失敗不能影響填寫功能 */ }
+}
+(function initAnalytics(){
+  try{
+    if(!ANALYTICS_CODE) return;
+    if(!/^[a-z0-9-]{2,40}$/.test(ANALYTICS_CODE)) return; /* 代碼格式不對就不啟用，避免組出奇怪的網址 */
+    var s=document.createElement('script');
+    s.async=true;
+    s.src='https://gc.zgo.at/count.js';
+    s.setAttribute('data-goatcounter','https://'+ANALYTICS_CODE+'.goatcounter.com/count');
+    document.head.appendChild(s);
+    var note=document.getElementById('analyticsNote');
+    if(note) note.style.display='inline';
+  }catch(e){}
+})();
 
 /* ---------- 截止倒數（第五屆評選辦法公告版：115年11月13日23:59線上截止／同日郵戳為憑）---------- */
 /* 用日曆天算：截止當天顯示「今天截止」，前一天顯示「還剩 1 天」 */
