@@ -243,7 +243,7 @@
       <tr><th>郵寄受理</th>
           <td>以掛號寄送申請文件至：<b>104 臺北市中山北路三段28號3樓<br>台灣農業科技資源運籌管理學會 收（永續善農獎報名）</b></td></tr>
       <tr><th>收件截止日</th>
-          <td><b>民國115年10月20日</b>（線上需於當日23時59分前完成上傳；紙本以當日郵戳為憑）</td></tr>
+          <td><b>民國115年11月13日</b>（線上需於當日23時59分前完成上傳；紙本以當日郵戳為憑）</td></tr>
     </table>
   </div>
   <div class="card">
@@ -2039,16 +2039,16 @@ function fallbackCopy(text){
   document.body.removeChild(ta);
 }
 
-/* ---------- 截止倒數（第五屆評選辦法公告版：115年10月20日23:59線上截止／同日郵戳為憑）---------- */
+/* ---------- 截止倒數（第五屆評選辦法公告版：115年11月13日23:59線上截止／同日郵戳為憑）---------- */
 /* 用日曆天算：截止當天顯示「今天截止」，前一天顯示「還剩 1 天」 */
 function deadlineText(now){
-  var dl=new Date(2026,9,20,23,59,59);
-  if(now>dl) return '本屆報名已於民國115年10月20日截止';
+  var dl=new Date(2026,10,13,23,59,59);
+  if(now>dl) return '本屆報名已於民國115年11月13日截止';
   var today=new Date(now.getFullYear(),now.getMonth(),now.getDate());
-  var dday=new Date(2026,9,20);
+  var dday=new Date(2026,10,13);
   var days=Math.round((dday-today)/86400000);
-  if(days<=0) return '報名截止：民國115年10月20日 · 今天截止（23:59 前）';
-  return '報名截止：民國115年10月20日 · 還剩 '+days+' 天';
+  if(days<=0) return '報名截止：民國115年11月13日 · 今天截止（23:59 前）';
+  return '報名截止：民國115年11月13日 · 還剩 '+days+' 天';
 }
 (function(){
   var bar=document.getElementById('deadlineBar');
